@@ -1,0 +1,60 @@
+
+import { Button } from "@/components/ui/button";
+
+const HeroSection = () => {
+  return (
+    <section id="home" className="relative h-screen w-full overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80')" }}
+      >
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-navy/40"></div>
+      </div>
+      
+      {/* Content */}
+      <div className="relative h-full flex flex-col justify-center items-center text-center px-4">
+        <div className="max-w-3xl mx-auto animate-fade-in">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+            Your Luxury Escape Awaits
+          </h1>
+          <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            Experience unparalleled luxury and comfort in our exquisite hotel, where every detail is crafted for your perfect getaway.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Button className="bg-gold hover:bg-gold/90 text-white text-sm px-8 py-6" size="lg">
+              BOOK YOUR STAY
+            </Button>
+            <Button variant="outline" className="border-white text-white hover:bg-white/10 text-sm px-8 py-6" size="lg">
+              EXPLORE ROOMS
+            </Button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Scroll Down Indicator */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
+        <a href="#about" className="flex flex-col items-center">
+          <span className="text-sm mb-2">Scroll Down</span>
+          <svg 
+            className="w-6 h-6" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M19 14l-7 7m0 0l-7-7m7 7V3" 
+            />
+          </svg>
+        </a>
+      </div>
+    </section>
+  );
+};
+
+export default HeroSection;
