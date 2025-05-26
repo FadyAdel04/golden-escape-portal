@@ -1,20 +1,20 @@
 
-import { Bed, Pool, Restaurant, Gym, Wifi, ParkingMeter } from "lucide-react";
+import { Bed, Waves, Utensils, Dumbbell, Wifi, ParkingMeter } from "lucide-react";
 
 const FacilitiesSection = () => {
   const facilities = [
     {
-      icon: Pool,
+      icon: Waves,
       title: "Swimming Pool",
       description: "Relax and unwind in our infinity pool with panoramic views."
     },
     {
-      icon: Restaurant,
+      icon: Utensils,
       title: "Fine Dining",
       description: "Savor gourmet cuisine prepared by our Michelin-starred chef."
     },
     {
-      icon: Gym,
+      icon: Dumbbell,
       title: "Fitness Center",
       description: "Stay fit with state-of-the-art equipment and personal trainers."
     },
