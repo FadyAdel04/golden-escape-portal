@@ -51,7 +51,7 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map(link => <a key={link.name} href={link.href} className={`font-medium text-sm hover:text-gold transition-colors ${isScrolled ? 'text-navy' : 'text-white'}`}>
+            {navLinks.map(link => <a key={link.name} href={link.href} className="color-black">
                 {link.name}
               </a>)}
             <div className="flex items-center gap-2">
