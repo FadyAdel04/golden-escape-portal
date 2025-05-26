@@ -44,7 +44,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <a href="#home" className="flex items-center">
-            <h1 className={`text-2xl font-bold ${isScrolled ? 'text-navy' : 'text-white'}`}>
+            <h1 className="text-zinc-950">
               <span className="text-gold">LUXURY</span> HAVEN
             </h1>
           </a>
