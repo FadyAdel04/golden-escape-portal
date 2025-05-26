@@ -56,7 +56,7 @@ const Navbar = () => {
               </a>)}
             <div className="flex items-center gap-2">
               <Link to="/admin">
-                <Button variant="outline" size="sm" className="bg-transparent text-zinc-200 text-center mx-[10px] my-[5px] px-[10px] py-[5px] text-base font-normal">
+                <Button variant="outline" size="sm" className="bg-transparent text-center mx-[10px] my-[5px] px-[10px] py-[5px] text-base font-normal text-zinc-900">
                   <Settings className="h-4 w-4 mr-1" />
                   Admin
                 </Button>
