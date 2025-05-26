@@ -1,10 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
+import { Link } from 'react-router-dom';
+import { Settings } from 'lucide-react';
+import { useAdmin } from '@/contexts/AdminContext';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isAdmin } = useAdmin();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,9 +54,21 @@ const Navbar = () => {
                 {link.name}
               </a>
             ))}
-            <Button className="bg-gold hover:bg-gold/90 text-white">
-              BOOK NOW
-            </Button>
+            <div className="flex items-center gap-2">
+              <Link to="/admin">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className={`${isScrolled ? 'border-navy text-navy hover:bg-navy hover:text-white' : 'border-white text-white hover:bg-white hover:text-navy'}`}
+                >
+                  <Settings className="h-4 w-4 mr-1" />
+                  Admin
+                </Button>
+              </Link>
+              <Button className="bg-gold hover:bg-gold/90 text-white">
+                BOOK NOW
+              </Button>
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -90,7 +106,13 @@ const Navbar = () => {
                   {link.name}
                 </a>
               ))}
-              <div className="px-4 pt-2">
+              <div className="px-4 pt-2 space-y-2">
+                <Link to="/admin" className="block">
+                  <Button variant="outline" className="w-full border-navy text-navy hover:bg-navy hover:text-white">
+                    <Settings className="h-4 w-4 mr-1" />
+                    Admin
+                  </Button>
+                </Link>
                 <Button className="bg-gold hover:bg-gold/90 text-white w-full">
                   BOOK NOW
                 </Button>

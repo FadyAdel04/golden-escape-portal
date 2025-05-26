@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
-import { Room } from "@/types/room";
+import { Room, RoomImage } from "@/types/room";
+import ImageUpload from "./ImageUpload";
+import { useRoomImages } from "@/hooks/useRoomImages";
 
 interface RoomFormProps {
   room?: Partial<Room>;
@@ -24,6 +26,15 @@ const RoomForm = ({ room, onSubmit, isLoading }: RoomFormProps) => {
     availability: room?.availability ?? true,
   });
   const [newFeature, setNewFeature] = useState("");
+  const [roomImages, setRoomImages] = useState<RoomImage[]>([]);
+
+  const { data: existingImages } = useRoomImages(room?.id || '');
+
+  useEffect(() => {
+    if (existingImages) {
+      setRoomImages(existingImages);
+    }
+  }, [existingImages]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +64,7 @@ const RoomForm = ({ room, onSubmit, isLoading }: RoomFormProps) => {
         <CardTitle>{room?.id ? 'Edit Room' : 'Add New Room'}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <Label htmlFor="title">Room Title</Label>
             <Input
@@ -109,6 +120,14 @@ const RoomForm = ({ room, onSubmit, isLoading }: RoomFormProps) => {
               ))}
             </div>
           </div>
+
+          {room?.id && (
+            <ImageUpload
+              roomId={room.id}
+              existingImages={roomImages}
+              onImagesChange={setRoomImages}
+            />
+          )}
 
           <div className="flex items-center space-x-2">
             <input
