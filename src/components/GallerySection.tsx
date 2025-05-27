@@ -115,7 +115,11 @@ const GallerySection = () => {
 
         {/* Lightbox */}
         <LightboxGallery
-          images={displayImages.map(img => ({ src: img.image_url, alt: img.alt_text || '' }))}
+          images={displayImages.map(img => ({ 
+            src: img.image_url, 
+            alt: img.alt_text || '', 
+            category: img.category 
+          }))}
           isOpen={lightboxOpen}
           currentIndex={currentImageIndex}
           onClose={() => setLightboxOpen(false)}

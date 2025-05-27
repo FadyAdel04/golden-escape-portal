@@ -17,7 +17,7 @@ export const useGalleryImages = () => {
     queryKey: ['gallery-images'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('gallery_images')
+        .from('gallery_images' as any)
         .select('*')
         .order('display_order', { ascending: true });
       
@@ -38,7 +38,7 @@ export const useCreateGalleryImage = () => {
       display_order?: number;
     }) => {
       const { data, error } = await supabase
-        .from('gallery_images')
+        .from('gallery_images' as any)
         .insert([imageData])
         .select()
         .single();
@@ -58,7 +58,7 @@ export const useDeleteGalleryImage = () => {
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('gallery_images')
+        .from('gallery_images' as any)
         .delete()
         .eq('id', id);
       
