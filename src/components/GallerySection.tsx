@@ -14,37 +14,55 @@ const GallerySection = () => {
       id: "1",
       image_url: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80",
       alt_text: "Luxury Suite Interior",
-      category: "rooms"
+      category: "rooms",
+      display_order: 1,
+      created_at: "",
+      updated_at: ""
     },
     {
       id: "2", 
       image_url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1760&q=80",
       alt_text: "Hotel Restaurant",
-      category: "dining"
+      category: "dining",
+      display_order: 2,
+      created_at: "",
+      updated_at: ""
     },
     {
       id: "3",
       image_url: "https://images.unsplash.com/photo-1540541338287-41700207dee6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80",
       alt_text: "Infinity Pool",
-      category: "pool"
+      category: "pool",
+      display_order: 3,
+      created_at: "",
+      updated_at: ""
     },
     {
       id: "4",
       image_url: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80",
       alt_text: "Luxury Bedroom",
-      category: "rooms"
+      category: "rooms",
+      display_order: 4,
+      created_at: "",
+      updated_at: ""
     },
     {
       id: "5",
       image_url: "https://images.unsplash.com/photo-1530229540764-e6faaf6b8f6d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80",
       alt_text: "Wedding Reception",
-      category: "events"
+      category: "events",
+      display_order: 5,
+      created_at: "",
+      updated_at: ""
     },
     {
       id: "6",
       image_url: "https://images.unsplash.com/photo-1534679541758-8dc68f0a9977?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1746&q=80",
       alt_text: "Breakfast Spread",
-      category: "dining"
+      category: "dining",
+      display_order: 6,
+      created_at: "",
+      updated_at: ""
     }
   ];
 
@@ -53,6 +71,14 @@ const GallerySection = () => {
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
     setLightboxOpen(true);
+  };
+
+  const handleNext = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % displayImages.length);
+  };
+
+  const handlePrev = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length);
   };
 
   if (isLoading) {
@@ -123,8 +149,8 @@ const GallerySection = () => {
           isOpen={lightboxOpen}
           currentIndex={currentImageIndex}
           onClose={() => setLightboxOpen(false)}
-          onNext={() => setCurrentImageIndex((prev) => (prev + 1) % displayImages.length)}
-          onPrev={() => setCurrentImageIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length)}
+          onNext={handleNext}
+          onPrev={handlePrev}
         />
       </div>
     </section>

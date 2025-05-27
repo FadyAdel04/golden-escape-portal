@@ -4,16 +4,18 @@ import { useState, useEffect } from "react";
 interface LightboxGalleryProps {
   images: { src: string; alt: string; category: string }[];
   isOpen: boolean;
-  currentImageIndex: number;
+  currentIndex: number;
   onClose: () => void;
+  onNext: () => void;
+  onPrev: () => void;
 }
 
-const LightboxGallery = ({ images, isOpen, currentImageIndex, onClose }: LightboxGalleryProps) => {
-  const [activeIndex, setActiveIndex] = useState(currentImageIndex);
+const LightboxGallery = ({ images, isOpen, currentIndex, onClose, onNext, onPrev }: LightboxGalleryProps) => {
+  const [activeIndex, setActiveIndex] = useState(currentIndex);
 
   useEffect(() => {
-    setActiveIndex(currentImageIndex);
-  }, [currentImageIndex]);
+    setActiveIndex(currentIndex);
+  }, [currentIndex]);
 
   useEffect(() => {
     if (isOpen) {
@@ -27,14 +29,35 @@ const LightboxGallery = ({ images, isOpen, currentImageIndex, onClose }: Lightbo
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!isOpen) return;
+      
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.key === 'ArrowLeft') {
+        handlePrevious();
+      } else if (e.key === 'ArrowRight') {
+        handleNext();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !images.length) return null;
 
   const handlePrevious = () => {
-    setActiveIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    const newIndex = activeIndex === 0 ? images.length - 1 : activeIndex - 1;
+    setActiveIndex(newIndex);
+    onPrev();
   };
 
   const handleNext = () => {
-    setActiveIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    const newIndex = activeIndex === images.length - 1 ? 0 : activeIndex + 1;
+    setActiveIndex(newIndex);
+    onNext();
   };
 
   return (
@@ -62,8 +85,8 @@ const LightboxGallery = ({ images, isOpen, currentImageIndex, onClose }: Lightbo
         
         <div className="flex justify-center items-center h-[70vh]">
           <img 
-            src={images[activeIndex].src} 
-            alt={images[activeIndex].alt}
+            src={images[activeIndex]?.src} 
+            alt={images[activeIndex]?.alt}
             className="max-h-full max-w-full object-contain"
           />
         </div>
@@ -114,7 +137,10 @@ const LightboxGallery = ({ images, isOpen, currentImageIndex, onClose }: Lightbo
         
         <div className="text-center mt-4 text-white">
           <p className="text-sm">
-            {activeIndex + 1} / {images.length} - {images[activeIndex].alt}
+            {activeIndex + 1} / {images.length} - {images[activeIndex]?.alt}
+          </p>
+          <p className="text-xs text-white/80 capitalize mt-1">
+            {images[activeIndex]?.category}
           </p>
         </div>
       </div>
