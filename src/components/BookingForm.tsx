@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { CalendarCheck } from "lucide-react";
 import { format } from "date-fns";
+import { useCreateBooking } from "@/hooks/useBookings";
 
 import {
   Select,
@@ -25,6 +25,7 @@ import { Calendar } from "@/components/ui/calendar";
 
 const BookingForm = () => {
   const { toast } = useToast();
+  const createBooking = useCreateBooking();
   const [formData, setFormData] = useState({
     checkIn: undefined as Date | undefined,
     checkOut: undefined as Date | undefined,
@@ -52,28 +53,43 @@ const BookingForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (validateForm()) {
-      // In a real application, you would send this data to your backend
-      console.log("Form submitted:", formData);
-      
-      toast({
-        title: "Booking Request Submitted",
-        description: "We will contact you shortly to confirm your reservation.",
-      });
-      
-      // Reset form
-      setFormData({
-        checkIn: undefined,
-        checkOut: undefined,
-        guests: "",
-        roomType: "",
-        name: "",
-        email: "",
-        phone: ""
-      });
+    if (validateForm() && formData.checkIn && formData.checkOut) {
+      try {
+        await createBooking.mutateAsync({
+          guest_name: formData.name,
+          guest_email: formData.email,
+          guest_phone: formData.phone,
+          check_in_date: format(formData.checkIn, 'yyyy-MM-dd'),
+          check_out_date: format(formData.checkOut, 'yyyy-MM-dd'),
+          number_of_guests: parseInt(formData.guests),
+          room_type: formData.roomType,
+        });
+
+        toast({
+          title: "Booking Request Submitted",
+          description: "We will contact you shortly to confirm your reservation.",
+        });
+        
+        // Reset form
+        setFormData({
+          checkIn: undefined,
+          checkOut: undefined,
+          guests: "",
+          roomType: "",
+          name: "",
+          email: "",
+          phone: ""
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to submit booking. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -227,7 +243,7 @@ const BookingForm = () => {
                     <SelectItem value="2">2 Guests</SelectItem>
                     <SelectItem value="3">3 Guests</SelectItem>
                     <SelectItem value="4">4 Guests</SelectItem>
-                    <SelectItem value="5+">5+ Guests</SelectItem>
+                    <SelectItem value="5">5+ Guests</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.guests && <p className="text-red-500 text-sm mt-1">{errors.guests}</p>}
@@ -312,8 +328,9 @@ const BookingForm = () => {
               <Button 
                 type="submit" 
                 className="w-full md:w-auto bg-gold hover:bg-gold/90 text-white px-10 py-6 text-lg"
+                disabled={createBooking.isPending}
               >
-                Book Now
+                {createBooking.isPending ? 'Submitting...' : 'Book Now'}
               </Button>
             </div>
           </form>

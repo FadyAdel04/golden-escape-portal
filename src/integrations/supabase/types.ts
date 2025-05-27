@@ -9,6 +9,54 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          admin_notes: string | null
+          check_in_date: string
+          check_out_date: string
+          created_at: string
+          guest_email: string
+          guest_name: string
+          guest_phone: string
+          id: string
+          number_of_guests: number
+          room_type: string
+          status: string
+          total_nights: number | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          check_in_date: string
+          check_out_date: string
+          created_at?: string
+          guest_email: string
+          guest_name: string
+          guest_phone: string
+          id?: string
+          number_of_guests: number
+          room_type: string
+          status?: string
+          total_nights?: number | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          check_in_date?: string
+          check_out_date?: string
+          created_at?: string
+          guest_email?: string
+          guest_name?: string
+          guest_phone?: string
+          id?: string
+          number_of_guests?: number
+          room_type?: string
+          status?: string
+          total_nights?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       room_images: {
         Row: {
           alt_text: string | null
