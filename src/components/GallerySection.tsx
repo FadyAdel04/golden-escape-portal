@@ -4,69 +4,11 @@ import { useGalleryImages } from "@/hooks/useGalleryImages";
 import LightboxGallery from "./LightboxGallery";
 
 const GallerySection = () => {
-  const { data: galleryImages, isLoading } = useGalleryImages();
+  const { data: galleryImages, isLoading, error } = useGalleryImages();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Fallback images if database is empty
-  const fallbackImages = [
-    {
-      id: "1",
-      image_url: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80",
-      alt_text: "Luxury Suite Interior",
-      category: "rooms",
-      display_order: 1,
-      created_at: "",
-      updated_at: ""
-    },
-    {
-      id: "2", 
-      image_url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1760&q=80",
-      alt_text: "Hotel Restaurant",
-      category: "dining",
-      display_order: 2,
-      created_at: "",
-      updated_at: ""
-    },
-    {
-      id: "3",
-      image_url: "https://images.unsplash.com/photo-1540541338287-41700207dee6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80",
-      alt_text: "Infinity Pool",
-      category: "pool",
-      display_order: 3,
-      created_at: "",
-      updated_at: ""
-    },
-    {
-      id: "4",
-      image_url: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80",
-      alt_text: "Luxury Bedroom",
-      category: "rooms",
-      display_order: 4,
-      created_at: "",
-      updated_at: ""
-    },
-    {
-      id: "5",
-      image_url: "https://images.unsplash.com/photo-1530229540764-e6faaf6b8f6d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80",
-      alt_text: "Wedding Reception",
-      category: "events",
-      display_order: 5,
-      created_at: "",
-      updated_at: ""
-    },
-    {
-      id: "6",
-      image_url: "https://images.unsplash.com/photo-1534679541758-8dc68f0a9977?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1746&q=80",
-      alt_text: "Breakfast Spread",
-      category: "dining",
-      display_order: 6,
-      created_at: "",
-      updated_at: ""
-    }
-  ];
-
-  const displayImages = galleryImages && galleryImages.length > 0 ? galleryImages : fallbackImages;
+  const displayImages = galleryImages || [];
 
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
@@ -102,6 +44,10 @@ const GallerySection = () => {
     );
   }
 
+  if (error) {
+    console.error('Gallery loading error:', error);
+  }
+
   return (
     <section id="gallery" className="section-padding bg-white">
       <div className="container mx-auto px-4 md:px-6">
@@ -116,42 +62,61 @@ const GallerySection = () => {
         </div>
 
         {/* Gallery Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {displayImages.map((image, index) => (
-            <div
-              key={image.id}
-              className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer aspect-[4/3]"
-              onClick={() => openLightbox(index)}
-            >
-              <img
-                src={image.image_url}
-                alt={image.alt_text || `Gallery image ${index + 1}`}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <p className="text-sm font-medium capitalize">{image.category}</p>
-                {image.alt_text && (
-                  <p className="text-xs text-white/80">{image.alt_text}</p>
-                )}
+        {displayImages.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {displayImages.map((image, index) => (
+              <div
+                key={image.id}
+                className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer aspect-[4/3]"
+                onClick={() => openLightbox(index)}
+              >
+                <img
+                  src={image.image_url}
+                  alt={image.alt_text || `Gallery image ${index + 1}`}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  onError={(e) => {
+                    console.error('Image failed to load:', image.image_url);
+                    // Fallback to a default image if the original fails to load
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
+                  }}
+                />
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <p className="text-sm font-medium capitalize">{image.category}</p>
+                  {image.alt_text && (
+                    <p className="text-xs text-white/80">{image.alt_text}</p>
+                  )}
+                </div>
               </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <svg className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
             </div>
-          ))}
-        </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Gallery Coming Soon</h3>
+            <p className="text-gray-500">Our gallery images are being prepared and will be available shortly.</p>
+          </div>
+        )}
 
         {/* Lightbox */}
-        <LightboxGallery
-          images={displayImages.map(img => ({ 
-            src: img.image_url, 
-            alt: img.alt_text || '', 
-            category: img.category 
-          }))}
-          isOpen={lightboxOpen}
-          currentIndex={currentImageIndex}
-          onClose={() => setLightboxOpen(false)}
-          onNext={handleNext}
-          onPrev={handlePrev}
-        />
+        {displayImages.length > 0 && (
+          <LightboxGallery
+            images={displayImages.map(img => ({ 
+              src: img.image_url, 
+              alt: img.alt_text || '', 
+              category: img.category 
+            }))}
+            isOpen={lightboxOpen}
+            currentIndex={currentImageIndex}
+            onClose={() => setLightboxOpen(false)}
+            onNext={handleNext}
+            onPrev={handlePrev}
+          />
+        )}
       </div>
     </section>
   );
