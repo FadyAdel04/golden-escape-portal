@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useGalleryImages, useCreateGalleryImage, useDeleteGalleryImage } from '@/hooks/useGalleryImages';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2, Upload, X, Eye } from 'lucide-react';
+import { Plus, Trash2, Upload, X, Eye, Image as ImageIcon } from 'lucide-react';
 
 const GalleryManagement = () => {
   const { data: images, isLoading, refetch } = useGalleryImages();
