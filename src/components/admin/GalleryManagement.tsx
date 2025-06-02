@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2, Upload } from 'lucide-react';
+import { Plus, Trash2, Upload, X } from 'lucide-react';
 
 const GalleryManagement = () => {
   const { data: images, isLoading } = useGalleryImages();
@@ -30,31 +30,52 @@ const GalleryManagement = () => {
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     alt_text: '',
     category: 'general',
     display_order: 0,
   });
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      toast({
+        title: "Error",
+        description: "Please select a file to upload.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileExt = selectedFile.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      const filePath = fileName;
+
+      console.log('Uploading file:', fileName);
 
       const { error: uploadError } = await supabase.storage
         .from('gallery-images')
-        .upload(filePath, file);
+        .upload(filePath, selectedFile);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
       const { data: urlData } = supabase.storage
         .from('gallery-images')
         .getPublicUrl(filePath);
+
+      console.log('File uploaded, creating database entry...');
 
       await createImage.mutateAsync({
         image_url: urlData.publicUrl,
@@ -69,8 +90,10 @@ const GalleryManagement = () => {
       });
 
       setIsDialogOpen(false);
+      setSelectedFile(null);
       setFormData({ alt_text: '', category: 'general', display_order: 0 });
     } catch (error) {
+      console.error('Upload failed:', error);
       toast({
         title: "Error",
         description: "Failed to upload image. Please try again.",
@@ -83,7 +106,19 @@ const GalleryManagement = () => {
 
   const handleDeleteImage = async (id: string) => {
     if (confirm('Are you sure you want to delete this image?')) {
-      deleteImage.mutate(id);
+      try {
+        await deleteImage.mutateAsync(id);
+        toast({
+          title: "Success",
+          description: "Image deleted successfully!",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete image. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -110,7 +145,7 @@ const GalleryManagement = () => {
               Add Image
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Add New Gallery Image</DialogTitle>
             </DialogHeader>
@@ -121,9 +156,21 @@ const GalleryManagement = () => {
                   id="image-upload"
                   type="file"
                   accept="image/*"
-                  onChange={handleFileUpload}
+                  onChange={handleFileSelect}
                   disabled={uploading}
                 />
+                {selectedFile && (
+                  <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                    <span>Selected: {selectedFile.name}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedFile(null)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
               
               <div>
@@ -167,12 +214,23 @@ const GalleryManagement = () => {
                 />
               </div>
               
-              {uploading && (
-                <div className="flex items-center justify-center py-4">
-                  <Upload className="h-4 w-4 mr-2 animate-spin" />
-                  <span>Uploading...</span>
-                </div>
-              )}
+              <Button 
+                onClick={handleUpload} 
+                disabled={uploading || !selectedFile}
+                className="w-full"
+              >
+                {uploading ? (
+                  <>
+                    <Upload className="h-4 w-4 mr-2 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Image
+                  </>
+                )}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -211,6 +269,12 @@ const GalleryManagement = () => {
             </div>
           </div>
         ))}
+        
+        {(!images || images.length === 0) && (
+          <div className="col-span-full text-center py-8">
+            <p className="text-gray-500">No images uploaded yet. Add your first image to get started!</p>
+          </div>
+        )}
       </div>
     </div>
   );
