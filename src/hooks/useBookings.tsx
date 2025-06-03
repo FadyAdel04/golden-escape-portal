@@ -83,40 +83,11 @@ export const useUpdateBooking = () => {
       
       if (error) throw error;
       
-      // Send email notification if status changed to confirmed, rejected, or cancelled
-      if (['confirmed', 'rejected', 'cancelled'].includes(status)) {
-        try {
-          const { error: emailError } = await supabase.functions.invoke('send-booking-notification', {
-            body: { booking: data }
-          });
-          
-          if (emailError) {
-            console.error('Email notification error:', emailError);
-            toast({
-              title: "Booking updated",
-              description: "Booking status updated but email notification failed to send.",
-              variant: "destructive"
-            });
-          } else {
-            toast({
-              title: "Booking updated",
-              description: "Booking status updated and email notification sent to guest.",
-            });
-          }
-        } catch (emailError) {
-          console.error('Email notification error:', emailError);
-          toast({
-            title: "Booking updated",
-            description: "Booking status updated but email notification failed to send.",
-            variant: "destructive"
-          });
-        }
-      } else {
-        toast({
-          title: "Booking updated",
-          description: "Booking status updated successfully.",
-        });
-      }
+      // Simple success message without email functionality
+      toast({
+        title: "Booking updated",
+        description: "Booking status updated successfully.",
+      });
       
       return data;
     },
