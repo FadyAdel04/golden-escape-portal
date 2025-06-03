@@ -10,22 +10,25 @@ import ReviewsSection from "@/components/ReviewsSection";
 import LocationSection from "@/components/LocationSection";
 import NewsletterSection from "@/components/NewsletterSection";
 import Footer from "@/components/Footer";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
-      <HeroSection />
-      <AboutSection />
-      <RoomsSection />
-      <FacilitiesSection />
-      <GallerySection />
-      <BookingForm />
-      <ReviewsSection />
-      <LocationSection />
-      <NewsletterSection />
-      <Footer />
-    </div>
+    <LanguageProvider>
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        <HeroSection />
+        <AboutSection />
+        <RoomsSection />
+        <FacilitiesSection />
+        <GallerySection />
+        <BookingForm />
+        <ReviewsSection />
+        <LocationSection />
+        <NewsletterSection />
+        <Footer />
+      </div>
+    </LanguageProvider>
   );
 };
 
