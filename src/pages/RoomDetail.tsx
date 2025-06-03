@@ -7,6 +7,7 @@ import { ArrowLeft, Wifi, Wind, Coffee, Eye } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BookingDialog from "@/components/BookingDialog";
 
 const RoomDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -141,12 +142,17 @@ const RoomDetail = () => {
 
               {/* Booking Section */}
               <div className="border-t pt-6">
-                <Button 
-                  className="w-full bg-gold hover:bg-gold/90 text-white py-3 text-lg font-semibold" 
-                  disabled={!room.availability}
+                <BookingDialog 
+                  roomTitle={room.title} 
+                  roomPrice={Number(room.price)}
                 >
-                  {room.availability ? 'Book Now' : 'Not Available'}
-                </Button>
+                  <Button 
+                    className="w-full bg-gold hover:bg-gold/90 text-white py-3 text-lg font-semibold" 
+                    disabled={!room.availability}
+                  >
+                    {room.availability ? 'Book Now' : 'Not Available'}
+                  </Button>
+                </BookingDialog>
                 <p className="text-sm text-gray-500 mt-2 text-center">
                   Best rate guaranteed • Free cancellation
                 </p>
