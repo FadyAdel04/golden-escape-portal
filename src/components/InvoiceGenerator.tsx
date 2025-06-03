@@ -1,7 +1,6 @@
 
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { type Booking } from "@/hooks/useBookings";
 
 interface InvoiceGeneratorProps {
@@ -9,8 +8,6 @@ interface InvoiceGeneratorProps {
 }
 
 const InvoiceGenerator = ({ booking }: InvoiceGeneratorProps) => {
-  const { t, isRTL } = useLanguage();
-
   const calculateNights = () => {
     const checkIn = new Date(booking.check_in_date);
     const checkOut = new Date(booking.check_out_date);
@@ -26,14 +23,13 @@ const InvoiceGenerator = ({ booking }: InvoiceGeneratorProps) => {
   const generatePDF = () => {
     const invoiceContent = `
       <!DOCTYPE html>
-      <html dir="${isRTL ? 'rtl' : 'ltr'}" lang="${isRTL ? 'ar' : 'en'}">
+      <html lang="en">
       <head>
         <meta charset="UTF-8">
-        <title>${t('invoice.title')}</title>
+        <title>Booking Invoice</title>
         <style>
           body { 
-            font-family: ${isRTL ? 'Arial' : 'Arial, sans-serif'}; 
-            direction: ${isRTL ? 'rtl' : 'ltr'};
+            font-family: Arial, sans-serif; 
             margin: 20px;
             line-height: 1.6;
           }
@@ -44,45 +40,45 @@ const InvoiceGenerator = ({ booking }: InvoiceGeneratorProps) => {
           .info-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
           .total-row { font-weight: bold; border-top: 2px solid #D4AF37; padding-top: 10px; }
           table { width: 100%; border-collapse: collapse; }
-          th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: ${isRTL ? 'right' : 'left'}; }
+          th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
           th { background-color: #f8f9fa; }
         </style>
       </head>
       <body>
         <div class="header">
           <div class="title">LUXURY HAVEN</div>
-          <h2>${t('invoice.title')}</h2>
+          <h2>Booking Invoice</h2>
         </div>
         
         <div class="section">
-          <div class="section-title">${t('invoice.guestDetails')}</div>
-          <div class="info-row"><span>${t('booking.fullName')}:</span><span>${booking.guest_name}</span></div>
-          <div class="info-row"><span>${t('booking.email')}:</span><span>${booking.guest_email}</span></div>
-          <div class="info-row"><span>${t('booking.phone')}:</span><span>${booking.guest_phone}</span></div>
+          <div class="section-title">Guest Details</div>
+          <div class="info-row"><span>Full Name:</span><span>${booking.guest_name}</span></div>
+          <div class="info-row"><span>Email:</span><span>${booking.guest_email}</span></div>
+          <div class="info-row"><span>Phone:</span><span>${booking.guest_phone}</span></div>
         </div>
         
         <div class="section">
-          <div class="section-title">${t('invoice.bookingDetails')}</div>
-          <div class="info-row"><span>${t('invoice.bookingId')}:</span><span>${booking.id.substring(0, 8)}</span></div>
-          <div class="info-row"><span>${t('booking.roomType')}:</span><span>${booking.room_type}</span></div>
-          <div class="info-row"><span>${t('booking.checkIn')}:</span><span>${new Date(booking.check_in_date).toLocaleDateString()}</span></div>
-          <div class="info-row"><span>${t('booking.checkOut')}:</span><span>${new Date(booking.check_out_date).toLocaleDateString()}</span></div>
-          <div class="info-row"><span>${t('booking.guests')}:</span><span>${booking.number_of_guests}</span></div>
-          <div class="info-row"><span>${t('invoice.status')}:</span><span>${booking.status}</span></div>
+          <div class="section-title">Booking Details</div>
+          <div class="info-row"><span>Booking ID:</span><span>${booking.id.substring(0, 8)}</span></div>
+          <div class="info-row"><span>Room Type:</span><span>${booking.room_type}</span></div>
+          <div class="info-row"><span>Check-in:</span><span>${new Date(booking.check_in_date).toLocaleDateString()}</span></div>
+          <div class="info-row"><span>Check-out:</span><span>${new Date(booking.check_out_date).toLocaleDateString()}</span></div>
+          <div class="info-row"><span>Guests:</span><span>${booking.number_of_guests}</span></div>
+          <div class="info-row"><span>Status:</span><span>${booking.status}</span></div>
         </div>
         
         <div class="section">
-          <div class="section-title">${t('invoice.paymentSummary')}</div>
-          <div class="info-row"><span>${t('booking.nights')}:</span><span>${nights}</span></div>
-          <div class="info-row"><span>${t('booking.ratePerNight')}:</span><span>$${roomPrice}</span></div>
-          <div class="info-row"><span>${t('invoice.subtotal')}:</span><span>$${subtotal}</span></div>
-          <div class="info-row"><span>${t('invoice.taxes')}:</span><span>$${taxes.toFixed(2)}</span></div>
-          <div class="info-row total-row"><span>${t('invoice.grandTotal')}:</span><span>$${total.toFixed(2)}</span></div>
+          <div class="section-title">Payment Summary</div>
+          <div class="info-row"><span>Nights:</span><span>${nights}</span></div>
+          <div class="info-row"><span>Rate per night:</span><span>$${roomPrice}</span></div>
+          <div class="info-row"><span>Subtotal:</span><span>$${subtotal}</span></div>
+          <div class="info-row"><span>Taxes (10%):</span><span>$${taxes.toFixed(2)}</span></div>
+          <div class="info-row total-row"><span>Grand Total:</span><span>$${total.toFixed(2)}</span></div>
         </div>
         
         <div class="section">
-          <div class="info-row"><span>${t('invoice.date')}:</span><span>${new Date().toLocaleDateString()}</span></div>
-          <div class="info-row"><span>${t('invoice.invoiceNumber')}:</span><span>INV-${Date.now()}</span></div>
+          <div class="info-row"><span>Date:</span><span>${new Date().toLocaleDateString()}</span></div>
+          <div class="info-row"><span>Invoice Number:</span><span>INV-${Date.now()}</span></div>
         </div>
       </body>
       </html>
@@ -105,7 +101,7 @@ const InvoiceGenerator = ({ booking }: InvoiceGeneratorProps) => {
       className="flex items-center gap-2"
     >
       <FileText className="h-4 w-4" />
-      {t('invoice.download')}
+      Download Invoice
     </Button>
   );
 };

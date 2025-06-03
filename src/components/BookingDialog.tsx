@@ -30,7 +30,6 @@ import {
 import { useCreateBooking, type BookingFormData } from "@/hooks/useBookings";
 import { Calendar, Users, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "@/contexts/LanguageContext";
 import InvoiceGenerator from "@/components/InvoiceGenerator";
 
 const bookingSchema = z.object({
@@ -64,7 +63,6 @@ const BookingDialog = ({ roomTitle, roomPrice, children }: BookingDialogProps) =
   const [submittedBooking, setSubmittedBooking] = useState<any>(null);
   const createBooking = useCreateBooking();
   const { toast } = useToast();
-  const { t, isRTL } = useLanguage();
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -84,14 +82,14 @@ const BookingDialog = ({ roomTitle, roomPrice, children }: BookingDialogProps) =
       const result = await createBooking.mutateAsync(data);
       setSubmittedBooking(result);
       toast({
-        title: t('booking.success'),
-        description: t('booking.successDesc'),
+        title: "Booking Request Submitted",
+        description: "Your booking request has been submitted successfully. You'll receive an email confirmation once it's reviewed.",
       });
       form.reset();
     } catch (error) {
       toast({
-        title: t('booking.error'),
-        description: t('booking.errorDesc'),
+        title: "Error",
+        description: "Failed to submit booking request. Please try again.",
         variant: "destructive",
       });
     }
@@ -117,18 +115,18 @@ const BookingDialog = ({ roomTitle, roomPrice, children }: BookingDialogProps) =
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className={`sm:max-w-[500px] max-h-[90vh] overflow-y-auto ${isRTL ? 'text-right' : ''}`}>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-navy">
-            {t('booking.title')} {roomTitle}
+            Book {roomTitle}
           </DialogTitle>
         </DialogHeader>
         
         {submittedBooking ? (
           <div className="space-y-4 text-center">
             <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="text-green-800 font-semibold mb-2">{t('booking.success')}</h3>
-              <p className="text-green-700 text-sm">{t('booking.successDesc')}</p>
+              <h3 className="text-green-800 font-semibold mb-2">Booking Request Submitted</h3>
+              <p className="text-green-700 text-sm">Your booking request has been submitted successfully. You'll receive an email confirmation once it's reviewed.</p>
             </div>
             <InvoiceGenerator booking={submittedBooking} />
             <Button 
@@ -138,7 +136,7 @@ const BookingDialog = ({ roomTitle, roomPrice, children }: BookingDialogProps) =
               }}
               className="w-full"
             >
-              {t('booking.cancel')}
+              Close
             </Button>
           </div>
         ) : (
@@ -148,7 +146,7 @@ const BookingDialog = ({ roomTitle, roomPrice, children }: BookingDialogProps) =
               <div className="space-y-4">
                 <h3 className="font-semibold text-navy flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  {t('booking.guestInfo')}
+                  Guest Information
                 </h3>
                 
                 <FormField
@@ -156,9 +154,9 @@ const BookingDialog = ({ roomTitle, roomPrice, children }: BookingDialogProps) =
                   name="guest_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('booking.fullName')}</FormLabel>
+                      <FormLabel>Full Name</FormLabel>
                       <FormControl>
-                        <Input placeholder={t('booking.fullName')} {...field} />
+                        <Input placeholder="Full Name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -170,11 +168,11 @@ const BookingDialog = ({ roomTitle, roomPrice, children }: BookingDialogProps) =
                   name="guest_email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('booking.email')}</FormLabel>
+                      <FormLabel>Email Address</FormLabel>
                       <FormControl>
                         <Input 
                           type="email" 
-                          placeholder={t('booking.email')} 
+                          placeholder="Email Address" 
                           {...field} 
                           className="flex items-center"
                         />
@@ -189,11 +187,11 @@ const BookingDialog = ({ roomTitle, roomPrice, children }: BookingDialogProps) =
                   name="guest_phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('booking.phone')}</FormLabel>
+                      <FormLabel>Phone Number</FormLabel>
                       <FormControl>
                         <Input 
                           type="tel" 
-                          placeholder={t('booking.phone')} 
+                          placeholder="Phone Number" 
                           {...field} 
                         />
                       </FormControl>
@@ -207,7 +205,7 @@ const BookingDialog = ({ roomTitle, roomPrice, children }: BookingDialogProps) =
               <div className="space-y-4">
                 <h3 className="font-semibold text-navy flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  {t('booking.bookingDetails')}
+                  Booking Details
                 </h3>
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -216,7 +214,7 @@ const BookingDialog = ({ roomTitle, roomPrice, children }: BookingDialogProps) =
                     name="check_in_date"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('booking.checkIn')}</FormLabel>
+                        <FormLabel>Check-in Date</FormLabel>
                         <FormControl>
                           <Input 
                             type="date" 
@@ -234,7 +232,7 @@ const BookingDialog = ({ roomTitle, roomPrice, children }: BookingDialogProps) =
                     name="check_out_date"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('booking.checkOut')}</FormLabel>
+                        <FormLabel>Check-out Date</FormLabel>
                         <FormControl>
                           <Input 
                             type="date" 
@@ -255,7 +253,7 @@ const BookingDialog = ({ roomTitle, roomPrice, children }: BookingDialogProps) =
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <Users className="h-4 w-4" />
-                        {t('booking.guests')}
+                        Number of Guests
                       </FormLabel>
                       <Select 
                         value={field.value?.toString()} 
@@ -263,13 +261,13 @@ const BookingDialog = ({ roomTitle, roomPrice, children }: BookingDialogProps) =
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder={t('booking.guests')} />
+                            <SelectValue placeholder="Number of Guests" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="bg-white border shadow-lg z-50">
                           {[1, 2, 3, 4, 5, 6].map((num) => (
                             <SelectItem key={num} value={num.toString()}>
-                              {num} {num === 1 ? (isRTL ? 'نزيل' : 'Guest') : (isRTL ? 'نزلاء' : 'Guests')}
+                              {num} {num === 1 ? 'Guest' : 'Guests'}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -283,41 +281,41 @@ const BookingDialog = ({ roomTitle, roomPrice, children }: BookingDialogProps) =
               {/* Booking Summary */}
               {calculateNights() > 0 && (
                 <div className="bg-beige/30 p-4 rounded-lg space-y-2">
-                  <h3 className="font-semibold text-navy">{t('booking.summary')}</h3>
-                  <div className={`flex justify-between text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <span>{t('booking.roomType')}:</span>
+                  <h3 className="font-semibold text-navy">Booking Summary</h3>
+                  <div className="flex justify-between text-sm">
+                    <span>Room Type:</span>
                     <span>{roomTitle}</span>
                   </div>
-                  <div className={`flex justify-between text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <span>{t('booking.nights')}:</span>
+                  <div className="flex justify-between text-sm">
+                    <span>Nights:</span>
                     <span>{calculateNights()}</span>
                   </div>
-                  <div className={`flex justify-between text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <span>{t('booking.ratePerNight')}:</span>
+                  <div className="flex justify-between text-sm">
+                    <span>Rate per night:</span>
                     <span>${roomPrice}</span>
                   </div>
-                  <div className={`flex justify-between font-semibold text-gold border-t pt-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <span>{t('booking.total')}:</span>
+                  <div className="flex justify-between font-semibold text-gold border-t pt-2">
+                    <span>Total:</span>
                     <span>${totalPrice}</span>
                   </div>
                 </div>
               )}
 
-              <div className={`flex gap-3 pt-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className="flex gap-3 pt-4">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setOpen(false)}
                   className="flex-1"
                 >
-                  {t('booking.cancel')}
+                  Cancel
                 </Button>
                 <Button
                   type="submit"
                   disabled={createBooking.isPending}
                   className="flex-1 bg-gold hover:bg-gold/90"
                 >
-                  {createBooking.isPending ? t('booking.submitting') : t('booking.submit')}
+                  {createBooking.isPending ? "Submitting..." : "Submit Booking Request"}
                 </Button>
               </div>
             </form>

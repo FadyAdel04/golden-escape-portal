@@ -4,15 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from 'react-router-dom';
 import { Settings } from 'lucide-react';
 import { useAdmin } from '@/contexts/AdminContext';
-import { useLanguage } from '@/contexts/LanguageContext';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { isAdmin } = useAdmin();
-  const { t, isRTL } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,18 +49,18 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: t('nav.home'), href: '#home' },
-    { name: t('nav.rooms'), href: '#rooms' },
-    { name: t('nav.facilities'), href: '#facilities' },
-    { name: t('nav.gallery'), href: '#gallery' },
-    { name: t('nav.booking'), href: '#booking' },
-    { name: t('nav.contact'), href: '#contact' }
+    { name: 'Home', href: '#home' },
+    { name: 'Rooms', href: '#rooms' },
+    { name: 'Facilities', href: '#facilities' },
+    { name: 'Gallery', href: '#gallery' },
+    { name: 'Booking', href: '#booking' },
+    { name: 'Contact', href: '#contact' }
   ];
 
   return (
     <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-3' : 'bg-transparent py-5'}`}>
       <div className="container mx-auto px-4 md:px-6">
-        <div className={`flex justify-between items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
+        <div className="flex justify-between items-center">
           {/* Logo */}
           <a 
             href="#home" 
@@ -76,7 +73,7 @@ const Navbar = () => {
           </a>
 
           {/* Desktop Navigation */}
-          <div className={`hidden md:flex items-center space-x-8 ${isRTL ? 'space-x-reverse' : ''}`}>
+          <div className="hidden md:flex items-center space-x-8">
             {navLinks.map(link => (
               <a 
                 key={link.name} 
@@ -87,19 +84,18 @@ const Navbar = () => {
                 {link.name}
               </a>
             ))}
-            <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <LanguageSwitcher />
+            <div className="flex items-center gap-2">
               <Link to="/admin">
                 <Button variant="outline" size="sm" className="bg-transparent text-center mx-[10px] my-[5px] px-[10px] py-[5px] text-base font-normal text-zinc-900">
                   <Settings className="h-4 w-4 mr-1" />
-                  {t('nav.admin')}
+                  Admin
                 </Button>
               </Link>
               <Button 
                 className="bg-gold hover:bg-gold/90 text-white"
                 onClick={(e) => handleNavClick('#booking', e)}
               >
-                {t('nav.bookNow')}
+                BOOK NOW
               </Button>
             </div>
           </div>
@@ -118,7 +114,7 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className={`md:hidden mt-4 bg-white rounded-lg shadow-lg py-4 px-2 absolute left-4 right-4 animate-fade-in ${isRTL ? 'text-right' : ''}`}>
+          <div className="md:hidden mt-4 bg-white rounded-lg shadow-lg py-4 px-2 absolute left-4 right-4 animate-fade-in">
             <div className="flex flex-col space-y-3">
               {navLinks.map(link => (
                 <a 
@@ -131,20 +127,17 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="px-4 pt-2 space-y-2">
-                <div className="flex justify-center mb-2">
-                  <LanguageSwitcher />
-                </div>
                 <Link to="/admin" className="block">
                   <Button variant="outline" className="w-full border-navy text-navy hover:bg-navy hover:text-white">
                     <Settings className="h-4 w-4 mr-1" />
-                    {t('nav.admin')}
+                    Admin
                   </Button>
                 </Link>
                 <Button 
                   className="bg-gold hover:bg-gold/90 text-white w-full"
                   onClick={(e) => handleNavClick('#booking', e)}
                 >
-                  {t('nav.bookNow')}
+                  BOOK NOW
                 </Button>
               </div>
             </div>
