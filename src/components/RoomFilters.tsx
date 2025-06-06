@@ -133,14 +133,14 @@ const RoomFiltersComponent = ({ filters, onFiltersChange, onReset }: RoomFilters
               Number of Guests
             </Label>
             <Select 
-              value={filters.numberOfGuests?.toString() || ""} 
-              onValueChange={(value) => updateFilters('numberOfGuests', value ? parseInt(value) : null)}
+              value={filters.numberOfGuests?.toString() || "any"} 
+              onValueChange={(value) => updateFilters('numberOfGuests', value === "any" ? null : parseInt(value))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Any number of guests" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Any number of guests</SelectItem>
+                <SelectItem value="any">Any number of guests</SelectItem>
                 <SelectItem value="1">1 Guest</SelectItem>
                 <SelectItem value="2">2 Guests</SelectItem>
                 <SelectItem value="3">3 Guests</SelectItem>
@@ -177,14 +177,14 @@ const RoomFiltersComponent = ({ filters, onFiltersChange, onReset }: RoomFilters
               View Type
             </Label>
             <Select 
-              value={filters.viewType || ""} 
-              onValueChange={(value) => updateFilters('viewType', value || null)}
+              value={filters.viewType || "any"} 
+              onValueChange={(value) => updateFilters('viewType', value === "any" ? null : value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Any view" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Any view</SelectItem>
+                <SelectItem value="any">Any view</SelectItem>
                 {viewOptions.map((view) => (
                   <SelectItem key={view} value={view}>
                     {view}
