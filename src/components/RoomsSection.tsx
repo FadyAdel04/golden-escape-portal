@@ -4,9 +4,20 @@ import { Wifi, Wind, Coffee, Eye } from "lucide-react";
 import { useRooms } from "@/hooks/useRooms";
 import { Link } from "react-router-dom";
 import BookingDialog from "@/components/BookingDialog";
+import RoomFiltersComponent, { RoomFilters } from "@/components/RoomFilters";
+import { useState, useMemo } from "react";
 
 const RoomsSection = () => {
   const { data: rooms, isLoading } = useRooms();
+
+  // Filter state
+  const [filters, setFilters] = useState<RoomFilters>({
+    search: "",
+    priceRange: [0, 1000],
+    numberOfGuests: null,
+    facilities: [],
+    viewType: null
+  });
 
   // Fallback to static data if no rooms in database
   const fallbackRooms = [
@@ -55,6 +66,57 @@ const RoomsSection = () => {
 
   const displayRooms = rooms && rooms.length > 0 ? rooms : fallbackRooms;
 
+  // Filter logic
+  const filteredRooms = useMemo(() => {
+    return displayRooms.filter(room => {
+      const isDbRoom = 'room_images' in room;
+      const roomTitle = room.title || room.name;
+      const roomPrice = Number(room.price);
+      const roomFeatures = isDbRoom ? room.features : room.features;
+
+      // Search filter
+      if (filters.search && !roomTitle.toLowerCase().includes(filters.search.toLowerCase()) && 
+          !room.description?.toLowerCase().includes(filters.search.toLowerCase())) {
+        return false;
+      }
+
+      // Price range filter
+      if (roomPrice < filters.priceRange[0] || roomPrice > filters.priceRange[1]) {
+        return false;
+      }
+
+      // Facilities filter
+      if (filters.facilities.length > 0) {
+        const hasAllFacilities = filters.facilities.every(facility => 
+          roomFeatures.some(feature => 
+            feature.toLowerCase().includes(facility.toLowerCase()) ||
+            facility.toLowerCase().includes(feature.toLowerCase())
+          )
+        );
+        if (!hasAllFacilities) return false;
+      }
+
+      // View type filter
+      if (filters.viewType) {
+        const hasView = roomFeatures.some(feature => 
+          feature.toLowerCase().includes(filters.viewType!.toLowerCase()) ||
+          filters.viewType!.toLowerCase().includes(feature.toLowerCase())
+        );
+        if (!hasView) return false;
+      }
+
+      // Number of guests filter (simplified - could be enhanced with actual guest capacity data)
+      if (filters.numberOfGuests) {
+        // For now, assume standard rooms fit 1-2, deluxe 2-3, suite 3+
+        const guestCapacity = roomTitle.toLowerCase().includes('suite') ? 4 : 
+                             roomTitle.toLowerCase().includes('deluxe') ? 3 : 2;
+        if (filters.numberOfGuests > guestCapacity) return false;
+      }
+
+      return true;
+    });
+  }, [displayRooms, filters]);
+
   const getFeatureIcon = (feature: string) => {
     const lowerFeature = feature.toLowerCase();
     if (lowerFeature.includes('wifi') || lowerFeature.includes('internet')) return Wifi;
@@ -62,6 +124,16 @@ const RoomsSection = () => {
     if (lowerFeature.includes('coffee') || lowerFeature.includes('minibar')) return Coffee;
     if (lowerFeature.includes('view') || lowerFeature.includes('balcony')) return Eye;
     return Wifi;
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      search: "",
+      priceRange: [0, 1000],
+      numberOfGuests: null,
+      facilities: [],
+      viewType: null
+    });
   };
 
   return (
@@ -76,6 +148,22 @@ const RoomsSection = () => {
             Experience the ultimate in comfort and luxury in our carefully designed rooms and suites, each offering a unique blend of elegance and modern amenities.
           </p>
         </div>
+
+        {/* Filters */}
+        <RoomFiltersComponent 
+          filters={filters}
+          onFiltersChange={setFilters}
+          onReset={resetFilters}
+        />
+
+        {/* Results Summary */}
+        {!isLoading && (
+          <div className="mb-6">
+            <p className="text-gray-600">
+              Showing {filteredRooms.length} of {displayRooms.length} rooms
+            </p>
+          </div>
+        )}
         
         {/* Room Cards */}
         {isLoading ? (
@@ -83,9 +171,9 @@ const RoomsSection = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading rooms...</p>
           </div>
-        ) : (
+        ) : filteredRooms.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {displayRooms.map(room => {
+            {filteredRooms.map(room => {
               const isDbRoom = 'room_images' in room;
               const roomImage = isDbRoom 
                 ? room.room_images?.[0]?.image_url || "https://images.unsplash.com/photo-1618773928121-c32242e63f39?ixlib=rb-4.0.3&auto=format&fit=crop&w=1740&q=80"
@@ -147,6 +235,17 @@ const RoomsSection = () => {
                 </div>
               );
             })}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-600 text-lg">No rooms match your current filters.</p>
+            <Button 
+              variant="outline" 
+              onClick={resetFilters}
+              className="mt-4"
+            >
+              Clear all filters
+            </Button>
           </div>
         )}
       </div>
