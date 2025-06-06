@@ -10,6 +10,7 @@ import ReviewsSection from "@/components/ReviewsSection";
 import LocationSection from "@/components/LocationSection";
 import NewsletterSection from "@/components/NewsletterSection";
 import Footer from "@/components/Footer";
+import Chatbot from "@/components/Chatbot";
 
 const Index = () => {
   return (
@@ -25,6 +26,7 @@ const Index = () => {
       <LocationSection />
       <NewsletterSection />
       <Footer />
+      <Chatbot />
     </div>
   );
 };
