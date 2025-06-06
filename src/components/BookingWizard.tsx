@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
 import { useCreateBooking, type BookingFormData } from "@/hooks/useBookings";
 import { useToast } from "@/hooks/use-toast";
 import BookingStepGuest from "@/components/booking/BookingStepGuest";
@@ -174,63 +175,65 @@ const BookingWizard = ({ roomTitle, roomPrice, children }: BookingWizardProps) =
               ))}
             </div>
 
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Step Content */}
-              {currentStep === 1 && <BookingStepGuest form={form} />}
-              {currentStep === 2 && (
-                <BookingStepRoomDetails 
-                  form={form} 
-                  roomTitle={roomTitle}
-                  roomPrice={roomPrice}
-                />
-              )}
-              {currentStep === 3 && (
-                <BookingStepConfirmation 
-                  form={form}
-                  calculateNights={calculateNights}
-                  totalPrice={totalPrice}
-                  isSubmitting={createBooking.isPending}
-                />
-              )}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Step Content */}
+                {currentStep === 1 && <BookingStepGuest form={form} />}
+                {currentStep === 2 && (
+                  <BookingStepRoomDetails 
+                    form={form} 
+                    roomTitle={roomTitle}
+                    roomPrice={roomPrice}
+                  />
+                )}
+                {currentStep === 3 && (
+                  <BookingStepConfirmation 
+                    form={form}
+                    calculateNights={calculateNights}
+                    totalPrice={totalPrice}
+                    isSubmitting={createBooking.isPending}
+                  />
+                )}
 
-              {/* Navigation Buttons */}
-              <div className="flex justify-between pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={currentStep === 1 ? handleClose : prevStep}
-                  className="flex items-center gap-2"
-                >
-                  {currentStep === 1 ? (
-                    "Cancel"
-                  ) : (
-                    <>
-                      <ChevronLeft className="w-4 h-4" />
-                      Previous
-                    </>
-                  )}
-                </Button>
-
-                {currentStep < 3 ? (
+                {/* Navigation Buttons */}
+                <div className="flex justify-between pt-4">
                   <Button
                     type="button"
-                    onClick={nextStep}
-                    className="flex items-center gap-2 bg-gold hover:bg-gold/90"
+                    variant="outline"
+                    onClick={currentStep === 1 ? handleClose : prevStep}
+                    className="flex items-center gap-2"
                   >
-                    Next
-                    <ChevronRight className="w-4 h-4" />
+                    {currentStep === 1 ? (
+                      "Cancel"
+                    ) : (
+                      <>
+                        <ChevronLeft className="w-4 h-4" />
+                        Previous
+                      </>
+                    )}
                   </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    disabled={createBooking.isPending}
-                    className="bg-gold hover:bg-gold/90"
-                  >
-                    {createBooking.isPending ? "Processing..." : "Confirm & Pay"}
-                  </Button>
-                )}
-              </div>
-            </form>
+
+                  {currentStep < 3 ? (
+                    <Button
+                      type="button"
+                      onClick={nextStep}
+                      className="flex items-center gap-2 bg-gold hover:bg-gold/90"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      disabled={createBooking.isPending}
+                      className="bg-gold hover:bg-gold/90"
+                    >
+                      {createBooking.isPending ? "Processing..." : "Confirm & Pay"}
+                    </Button>
+                  )}
+                </div>
+              </form>
+            </Form>
           </div>
         )}
       </DialogContent>
