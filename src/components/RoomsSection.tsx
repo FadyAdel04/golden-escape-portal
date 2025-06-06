@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Wifi, Wind, Coffee, Eye } from "lucide-react";
 import { useRooms } from "@/hooks/useRooms";
 import { Link } from "react-router-dom";
-import BookingDialog from "@/components/BookingDialog";
+import BookingWizard from "@/components/BookingWizard";
 import RoomFiltersComponent, { RoomFilters } from "@/components/RoomFilters";
 import { useState, useMemo } from "react";
 
@@ -222,14 +222,14 @@ const RoomsSection = () => {
                           View Details
                         </Button>
                       </Link>
-                      <BookingDialog 
+                      <BookingWizard 
                         roomTitle={room.title} 
                         roomPrice={Number(room.price)}
                       >
                         <Button className="bg-gold hover:bg-gold/90 text-white flex-1">
                           Book Now
                         </Button>
-                      </BookingDialog>
+                      </BookingWizard>
                     </div>
                   </div>
                 </div>
