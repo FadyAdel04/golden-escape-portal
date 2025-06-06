@@ -70,7 +70,7 @@ const RoomsSection = () => {
   const filteredRooms = useMemo(() => {
     return displayRooms.filter(room => {
       const isDbRoom = 'room_images' in room;
-      const roomTitle = room.title || room.name;
+      const roomTitle = room.title;
       const roomPrice = Number(room.price);
       const roomFeatures = isDbRoom ? room.features : room.features;
 
@@ -185,7 +185,7 @@ const RoomsSection = () => {
                   <div className="aspect-[4/3] overflow-hidden">
                     <img 
                       src={roomImage} 
-                      alt={room.title || room.name} 
+                      alt={room.title} 
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" 
                     />
                   </div>
@@ -193,7 +193,7 @@ const RoomsSection = () => {
                   {/* Room Details */}
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-xl font-bold text-navy">{room.title || room.name}</h3>
+                      <h3 className="text-xl font-bold text-navy">{room.title}</h3>
                       <div className="text-gold font-playfair">
                         <span className="text-lg font-bold">${room.price}</span>
                         <span className="text-sm">/night</span>
@@ -223,7 +223,7 @@ const RoomsSection = () => {
                         </Button>
                       </Link>
                       <BookingDialog 
-                        roomTitle={room.title || room.name} 
+                        roomTitle={room.title} 
                         roomPrice={Number(room.price)}
                       >
                         <Button className="bg-gold hover:bg-gold/90 text-white flex-1">
