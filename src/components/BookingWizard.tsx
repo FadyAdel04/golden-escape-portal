@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,11 +13,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useCreateBooking, type BookingFormData } from "@/hooks/useBookings";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfiles";
 import { useToast } from "@/hooks/use-toast";
 import BookingStepGuest from "@/components/booking/BookingStepGuest";
 import BookingStepRoomDetails from "@/components/booking/BookingStepRoomDetails";
 import BookingStepConfirmation from "@/components/booking/BookingStepConfirmation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Navigate } from "react-router-dom";
 
 const bookingSchema = z.object({
   guest_name: z.string().min(2, "Name must be at least 2 characters"),
@@ -45,24 +49,58 @@ interface BookingWizardProps {
 }
 
 const BookingWizard = ({ roomTitle, roomPrice, children }: BookingWizardProps) => {
+  const { user } = useAuth();
+  const { data: profile } = useProfile();
   const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [submittedBooking, setSubmittedBooking] = useState<any>(null);
+  const [redirectToAuth, setRedirectToAuth] = useState(false);
   const createBooking = useCreateBooking();
   const { toast } = useToast();
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
-      guest_name: "",
-      guest_email: "",
-      guest_phone: "",
+      guest_name: profile?.full_name || "",
+      guest_email: user?.email || "",
+      guest_phone: profile?.phone || "",
       check_in_date: "",
       check_out_date: "",
       number_of_guests: 1,
       room_type: roomTitle || "",
     },
   });
+
+  // Update form defaults when profile loads
+  useState(() => {
+    if (profile && user) {
+      form.reset({
+        guest_name: profile.full_name || "",
+        guest_email: user.email || "",
+        guest_phone: profile.phone || "",
+        check_in_date: form.getValues("check_in_date"),
+        check_out_date: form.getValues("check_out_date"),
+        number_of_guests: form.getValues("number_of_guests"),
+        room_type: roomTitle || form.getValues("room_type"),
+      });
+    }
+  });
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen && !user) {
+      setRedirectToAuth(true);
+      return;
+    }
+    setOpen(newOpen);
+  };
+
+  if (redirectToAuth) {
+    toast({
+      title: "Authentication Required",
+      description: "Please sign in to make a booking.",
+    });
+    return <Navigate to="/auth" />;
+  }
 
   const steps = [
     { number: 1, title: "Guest Details", description: "Your information" },
@@ -123,7 +161,7 @@ const BookingWizard = ({ roomTitle, roomPrice, children }: BookingWizardProps) =
   const totalPrice = calculateNights() * (roomPrice || 0);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>

@@ -1,144 +1,79 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from 'react-router-dom';
-import { Settings } from 'lucide-react';
-import { useAdmin } from '@/contexts/AdminContext';
+import { Menu, X } from "lucide-react";
+import AuthButton from "@/components/AuthButton";
 
 const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const navigate = useNavigate();
-  const { isAdmin } = useAdmin();
+  const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const handleNavClick = (href: string, event: React.MouseEvent) => {
-    event.preventDefault();
-    
-    // If we're not on the home page, navigate there first
-    if (window.location.pathname !== '/') {
-      navigate('/');
-      // Wait for navigation to complete, then scroll
-      setTimeout(() => {
-        const element = document.querySelector(href);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    } else {
-      // We're already on home page, just scroll to section
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-    
-    // Close mobile menu if open
-    setMobileMenuOpen(false);
-  };
-
-  const navLinks = [
-    { name: 'Home', href: '#home' },
-    { name: 'Rooms', href: '#rooms' },
-    { name: 'Facilities', href: '#facilities' },
-    { name: 'Gallery', href: '#gallery' },
-    { name: 'Booking', href: '#booking' },
-    { name: 'Contact', href: '#contact' }
+  const navItems = [
+    { href: "#hero", label: "Home" },
+    { href: "#about", label: "About" },
+    { href: "#rooms", label: "Rooms" },
+    { href: "#facilities", label: "Facilities" },
+    { href: "#gallery", label: "Gallery" },
+    { href: "#reviews", label: "Reviews" },
+    { href: "#location", label: "Location" },
   ];
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-3' : 'bg-transparent py-5'}`}>
+    <nav className="bg-navy text-white shadow-lg fixed w-full top-0 z-50">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <a 
-            href="#home" 
-            className="flex items-center"
-            onClick={(e) => handleNavClick('#home', e)}
-          >
-            <h1 className="text-zinc-950">
-              <span className="text-gold">LUXURY</span> HAVEN
-            </h1>
-          </a>
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gold rounded-full flex items-center justify-center">
+              <span className="text-navy font-bold text-sm">GE</span>
+            </div>
+            <span className="font-playfair text-xl font-bold">Golden Escape</span>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map(link => (
-              <a 
-                key={link.name} 
-                href={link.href} 
-                className="color-black hover:text-gold transition-colors cursor-pointer"
-                onClick={(e) => handleNavClick(link.href, e)}
+            {navItems.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="hover:text-gold transition-colors duration-200"
               >
-                {link.name}
+                {item.label}
               </a>
             ))}
-            <div className="flex items-center gap-2">
-              <Link to="/admin">
-                <Button variant="outline" size="sm" className="bg-transparent text-center mx-[10px] my-[5px] px-[10px] py-[5px] text-base font-normal text-zinc-900">
-                  <Settings className="h-4 w-4 mr-1" />
-                  Admin
-                </Button>
-              </Link>
-              <Button 
-                className="bg-gold hover:bg-gold/90 text-white"
-                onClick={(e) => handleNavClick('#booking', e)}
-              >
-                BOOK NOW
-              </Button>
-            </div>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button className="md:hidden focus:outline-none" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            <svg className={`w-6 h-6 ${isScrolled ? 'text-navy' : 'text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              {mobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
+          {/* Auth Button */}
+          <div className="hidden md:flex">
+            <AuthButton />
+          </div>
+
+          {/* Mobile menu button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="md:hidden text-white hover:text-gold"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </Button>
         </div>
 
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden mt-4 bg-white rounded-lg shadow-lg py-4 px-2 absolute left-4 right-4 animate-fade-in">
-            <div className="flex flex-col space-y-3">
-              {navLinks.map(link => (
-                <a 
-                  key={link.name} 
-                  href={link.href} 
-                  className="text-navy hover:text-gold px-4 py-2 rounded-md transition-colors cursor-pointer" 
-                  onClick={(e) => handleNavClick(link.href, e)}
+        {/* Mobile Navigation */}
+        {isOpen && (
+          <div className="md:hidden pb-4">
+            <div className="flex flex-col space-y-2">
+              {navItems.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="block py-2 hover:text-gold transition-colors duration-200"
+                  onClick={() => setIsOpen(false)}
                 >
-                  {link.name}
+                  {item.label}
                 </a>
               ))}
-              <div className="px-4 pt-2 space-y-2">
-                <Link to="/admin" className="block">
-                  <Button variant="outline" className="w-full border-navy text-navy hover:bg-navy hover:text-white">
-                    <Settings className="h-4 w-4 mr-1" />
-                    Admin
-                  </Button>
-                </Link>
-                <Button 
-                  className="bg-gold hover:bg-gold/90 text-white w-full"
-                  onClick={(e) => handleNavClick('#booking', e)}
-                >
-                  BOOK NOW
-                </Button>
+              <div className="pt-2">
+                <AuthButton />
               </div>
             </div>
           </div>

@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export type Booking = {
   id: string;
@@ -15,6 +16,7 @@ export type Booking = {
   status: 'pending' | 'confirmed' | 'cancelled' | 'rejected';
   admin_notes?: string;
   total_nights: number;
+  user_id?: string;
   created_at: string;
   updated_at: string;
 };
@@ -30,28 +32,37 @@ export type BookingFormData = {
 };
 
 export const useBookings = () => {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ['bookings'],
+    queryKey: ['bookings', user?.id],
     queryFn: async () => {
+      if (!user) throw new Error('User not authenticated');
+      
       const { data, error } = await supabase
         .from('bookings')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data as Booking[];
     },
+    enabled: !!user,
   });
 };
 
 export const useCreateBooking = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   
   return useMutation({
     mutationFn: async (bookingData: BookingFormData) => {
+      if (!user) throw new Error('User not authenticated');
+      
       const { data, error } = await supabase
         .from('bookings')
-        .insert([bookingData])
+        .insert([{ ...bookingData, user_id: user.id }])
         .select()
         .single();
       
@@ -83,7 +94,6 @@ export const useUpdateBooking = () => {
       
       if (error) throw error;
       
-      // Simple success message without email functionality
       toast({
         title: "Booking updated",
         description: "Booking status updated successfully.",

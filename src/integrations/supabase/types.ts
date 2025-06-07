@@ -24,6 +24,7 @@ export type Database = {
           status: string
           total_nights: number | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           admin_notes?: string | null
@@ -39,6 +40,7 @@ export type Database = {
           status?: string
           total_nights?: number | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           admin_notes?: string | null
@@ -54,6 +56,7 @@ export type Database = {
           status?: string
           total_nights?: number | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -83,6 +86,30 @@ export type Database = {
           display_order?: number | null
           id?: string
           image_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
           updated_at?: string
         }
         Relationships: []
