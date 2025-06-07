@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -136,15 +135,13 @@ const BookingWizard = ({ roomTitle, roomPrice, children }: BookingWizardProps) =
         </DialogHeader>
         
         {submittedBooking ? (
-          <div className="space-y-4 text-center">
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="text-green-800 font-semibold mb-2">Booking Confirmed!</h3>
-              <p className="text-green-700 text-sm">Your booking has been confirmed. You'll receive an email confirmation shortly.</p>
-            </div>
-            <Button onClick={handleClose} className="w-full">
-              Close
-            </Button>
-          </div>
+          <BookingStepConfirmation 
+            form={form}
+            calculateNights={calculateNights}
+            totalPrice={totalPrice}
+            isSubmitting={false}
+            submittedBooking={submittedBooking}
+          />
         ) : (
           <div className="space-y-6">
             {/* Progress Steps */}
