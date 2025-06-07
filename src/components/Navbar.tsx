@@ -13,9 +13,23 @@ const Navbar = () => {
     { href: "#rooms", label: "Rooms" },
     { href: "#facilities", label: "Facilities" },
     { href: "#gallery", label: "Gallery" },
+    { href: "#booking", label: "Book" },
     { href: "#reviews", label: "Reviews" },
     { href: "#location", label: "Location" },
   ];
+
+  const scrollToSection = (href: string) => {
+    const element = document.querySelector(href);
+    if (element) {
+      const offset = 80; // Account for fixed navbar height
+      const elementPosition = element.offsetTop - offset;
+      window.scrollTo({
+        top: elementPosition,
+        behavior: 'smooth'
+      });
+    }
+    setIsOpen(false);
+  };
 
   return (
     <nav className="bg-navy text-white shadow-lg fixed w-full top-0 z-50">
@@ -32,13 +46,13 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <a
+              <button
                 key={item.href}
-                href={item.href}
-                className="hover:text-gold transition-colors duration-200"
+                onClick={() => scrollToSection(item.href)}
+                className="hover:text-gold transition-colors duration-200 bg-transparent border-none text-white cursor-pointer"
               >
                 {item.label}
-              </a>
+              </button>
             ))}
           </div>
 
@@ -63,14 +77,13 @@ const Navbar = () => {
           <div className="md:hidden pb-4">
             <div className="flex flex-col space-y-2">
               {navItems.map((item) => (
-                <a
+                <button
                   key={item.href}
-                  href={item.href}
-                  className="block py-2 hover:text-gold transition-colors duration-200"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => scrollToSection(item.href)}
+                  className="block py-2 hover:text-gold transition-colors duration-200 text-left bg-transparent border-none text-white cursor-pointer"
                 >
                   {item.label}
-                </a>
+                </button>
               ))}
               <div className="pt-2">
                 <AuthButton />
