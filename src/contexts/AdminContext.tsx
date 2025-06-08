@@ -3,15 +3,13 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface AdminContextType {
   isAdmin: boolean;
-  login: (email: string, password: string) => boolean;
+  login: (password: string) => boolean;
   logout: () => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
-// Admin credentials - in production, this should be handled more securely
-const ADMIN_EMAIL = 'admin@goldenescape.com';
-const ADMIN_PASSWORD = 'admin123!@#';
+const ADMIN_PASSWORD = 'admin123'; // In production, use proper authentication
 
 export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -23,8 +21,8 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  const login = (email: string, password: string) => {
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+  const login = (password: string) => {
+    if (password === ADMIN_PASSWORD) {
       setIsAdmin(true);
       localStorage.setItem('isAdmin', 'true');
       return true;

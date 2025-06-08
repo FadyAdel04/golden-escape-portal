@@ -8,17 +8,16 @@ import { useAdmin } from '@/contexts/AdminContext';
 import { Lock } from 'lucide-react';
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login } = useAdmin();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(email, password)) {
+    if (login(password)) {
       setError('');
     } else {
-      setError('Invalid email or password');
+      setError('Invalid password');
     }
   };
 
@@ -33,17 +32,6 @@ const AdminLogin = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter admin email"
-                required
-              />
-            </div>
             <div>
               <Label htmlFor="password">Password</Label>
               <Input
@@ -61,9 +49,7 @@ const AdminLogin = () => {
             </Button>
           </form>
           <p className="text-sm text-gray-500 mt-4 text-center">
-            Demo credentials:<br />
-            Email: admin@goldenescape.com<br />
-            Password: admin123!@#
+            Demo password: admin123
           </p>
         </CardContent>
       </Card>
