@@ -19,7 +19,7 @@ const Navbar = () => {
   ];
 
   const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
+    const element = document.querySelector(href) as HTMLElement;
     if (element) {
       const offset = 80; // Account for fixed navbar height
       const elementPosition = element.offsetTop - offset;
