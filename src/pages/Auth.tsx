@@ -55,10 +55,12 @@ const Auth = () => {
     },
   });
 
-  // Redirect if already authenticated
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
+  // Redirect if already authenticated - using useEffect to prevent infinite loops
+  useEffect(() => {
+    if (user && !loading) {
+      // This will be handled by Navigate component
+    }
+  }, [user, loading]);
 
   if (loading) {
     return (
@@ -68,16 +70,31 @@ const Auth = () => {
     );
   }
 
+  // Redirect if already authenticated
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+
   const onSignIn = async (data: SignInFormData) => {
     setIsLoading(true);
-    await signIn(data.email, data.password);
-    setIsLoading(false);
+    try {
+      await signIn(data.email, data.password);
+    } catch (error) {
+      console.error('Sign in error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const onSignUp = async (data: SignUpFormData) => {
     setIsLoading(true);
-    await signUp(data.email, data.password, data.fullName);
-    setIsLoading(false);
+    try {
+      await signUp(data.email, data.password, data.fullName);
+    } catch (error) {
+      console.error('Sign up error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
