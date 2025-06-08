@@ -55,13 +55,7 @@ const Auth = () => {
     },
   });
 
-  // Redirect if already authenticated - using useEffect to prevent infinite loops
-  useEffect(() => {
-    if (user && !loading) {
-      // This will be handled by Navigate component
-    }
-  }, [user, loading]);
-
+  // Show loading while auth is initializing
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
