@@ -159,6 +159,22 @@ const GalleryManagement = () => {
     }
 
     try {
+      // Extract filename from URL to delete from storage
+      const urlParts = imageUrl.split('/');
+      const fileName = urlParts[urlParts.length - 1];
+      
+      console.log('Deleting file from storage:', fileName);
+      
+      // Delete from storage first
+      const { error: storageError } = await supabase.storage
+        .from('gallery-images')
+        .remove([fileName]);
+        
+      if (storageError) {
+        console.error('Error deleting image from storage:', storageError);
+      }
+
+      // Delete from database
       await deleteImage.mutateAsync(id);
       
       toast({

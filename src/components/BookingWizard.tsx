@@ -1,56 +1,31 @@
 
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import BookingStepRoomDetails from "./booking/BookingStepRoomDetails";
-import BookingStepGuest from "./booking/BookingStepGuest";
+import BookingStepPersonal, { PersonalInfoData } from "./booking/BookingStepPersonal";
+import BookingStepRoomSelection, { RoomSelectionData } from "./booking/BookingStepRoomSelection";
+import BookingStepPayment from "./booking/BookingStepPayment";
 import BookingStepConfirmation from "./booking/BookingStepConfirmation";
 import { useCreateBooking, BookingFormData } from "@/hooks/useBookings";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-
-const bookingSchema = z.object({
-  room_type: z.string().min(1, "Please select a room type"),
-  check_in_date: z.string().min(1, "Check-in date is required"),
-  check_out_date: z.string().min(1, "Check-out date is required"),
-  number_of_guests: z.number().min(1, "At least 1 guest is required"),
-  guest_name: z.string().min(1, "Guest name is required"),
-  guest_email: z.string().email("Please enter a valid email"),
-  guest_phone: z.string().min(1, "Phone number is required"),
-});
 
 interface BookingWizardProps {
   children: React.ReactNode;
-  roomTitle: string;
-  roomPrice: number;
+  roomTitle?: string;
+  roomPrice?: number;
 }
 
 const BookingWizard = ({ children, roomTitle, roomPrice }: BookingWizardProps) => {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfoData | null>(null);
+  const [roomSelection, setRoomSelection] = useState<RoomSelectionData | null>(null);
   const [submittedBooking, setSubmittedBooking] = useState<any>(null);
   
   const createBooking = useCreateBooking();
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  const form = useForm<BookingFormData>({
-    resolver: zodResolver(bookingSchema),
-    defaultValues: {
-      room_type: roomTitle,
-      check_in_date: "",
-      check_out_date: "",
-      number_of_guests: 1,
-      guest_name: "",
-      guest_email: "",
-      guest_phone: "",
-    },
-  });
 
   const handleTriggerClick = () => {
     if (!user) {
@@ -60,25 +35,50 @@ const BookingWizard = ({ children, roomTitle, roomPrice }: BookingWizardProps) =
     setOpen(true);
   };
 
-  const nextStep = () => {
-    setStep(step + 1);
+  const handlePersonalInfoNext = (data: PersonalInfoData) => {
+    setPersonalInfo(data);
+    setStep(2);
   };
 
-  const prevStep = () => {
-    setStep(step - 1);
+  const handleRoomSelectionNext = (data: RoomSelectionData) => {
+    setRoomSelection(data);
+    setStep(3);
+  };
+
+  const handleConfirmBooking = () => {
+    if (!personalInfo || !roomSelection) return;
+
+    const bookingData: BookingFormData = {
+      guest_name: personalInfo.guest_name,
+      guest_email: personalInfo.guest_email,
+      guest_phone: personalInfo.guest_phone,
+      room_type: roomSelection.room_type,
+      check_in_date: roomSelection.check_in_date,
+      check_out_date: roomSelection.check_out_date,
+      number_of_guests: roomSelection.number_of_guests,
+    };
+
+    createBooking.mutate(bookingData, {
+      onSuccess: (newBooking) => {
+        setSubmittedBooking(newBooking);
+        setStep(4);
+      },
+    });
+  };
+
+  const resetWizard = () => {
+    setStep(1);
+    setPersonalInfo(null);
+    setRoomSelection(null);
+    setSubmittedBooking(null);
+    setOpen(false);
   };
 
   const calculateNights = () => {
-    const checkIn = form.watch("check_in_date");
-    const checkOut = form.watch("check_out_date");
-    
-    if (checkIn && checkOut) {
-      const nights = Math.ceil(
-        (new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24)
-      );
-      return nights > 0 ? nights : 0;
-    }
-    return 0;
+    if (!roomSelection) return 0;
+    const checkIn = new Date(roomSelection.check_in_date);
+    const checkOut = new Date(roomSelection.check_out_date);
+    return Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
   };
 
   const getRoomPrice = (roomType: string) => {
@@ -91,54 +91,19 @@ const BookingWizard = ({ children, roomTitle, roomPrice }: BookingWizardProps) =
   };
 
   const calculateTotalPrice = () => {
+    if (!roomSelection) return 0;
     const nights = calculateNights();
-    const currentRoomType = form.watch("room_type");
-    const pricePerNight = getRoomPrice(currentRoomType);
+    const pricePerNight = getRoomPrice(roomSelection.room_type);
     return nights * pricePerNight;
   };
 
-  const handleSubmit = (data: BookingFormData) => {
-    createBooking.mutate(data, {
-      onSuccess: (newBooking) => {
-        setSubmittedBooking(newBooking);
-        setStep(3);
-      },
-    });
-  };
-
-  const resetWizard = () => {
-    setStep(1);
-    setSubmittedBooking(null);
-    form.reset({
-      room_type: roomTitle,
-      check_in_date: "",
-      check_out_date: "",
-      number_of_guests: 1,
-      guest_name: "",
-      guest_email: "",
-      guest_phone: "",
-    });
-    setOpen(false);
-  };
-
-  const handleNext = async () => {
-    let fieldsToValidate: (keyof BookingFormData)[] = [];
-    
-    if (step === 1) {
-      fieldsToValidate = ["room_type", "check_in_date", "check_out_date", "number_of_guests"];
-    } else if (step === 2) {
-      fieldsToValidate = ["guest_name", "guest_email", "guest_phone"];
-    }
-
-    const isValid = await form.trigger(fieldsToValidate);
-    if (isValid) {
-      if (step === 2) {
-        // Submit the form
-        const formData = form.getValues();
-        handleSubmit(formData);
-      } else {
-        nextStep();
-      }
+  const getStepTitle = () => {
+    switch (step) {
+      case 1: return "Personal Information";
+      case 2: return "Room & Dates";
+      case 3: return "Payment & Confirmation";
+      case 4: return "Booking Confirmed";
+      default: return "Book Your Stay";
     }
   };
 
@@ -149,59 +114,79 @@ const BookingWizard = ({ children, roomTitle, roomPrice }: BookingWizardProps) =
           {children}
         </div>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {step === 1 && "Select Room & Dates"}
-            {step === 2 && "Guest Information"}
-            {step === 3 && "Booking Confirmation"}
-          </DialogTitle>
+          <DialogTitle>{getStepTitle()}</DialogTitle>
+          {step < 4 && (
+            <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center gap-1">
+                {[1, 2, 3].map((stepNumber) => (
+                  <div key={stepNumber} className="flex items-center">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                        stepNumber === step
+                          ? "bg-gold text-white"
+                          : stepNumber < step
+                          ? "bg-navy text-white"
+                          : "bg-gray-200 text-gray-600"
+                      }`}
+                    >
+                      {stepNumber}
+                    </div>
+                    {stepNumber < 3 && (
+                      <div
+                        className={`w-12 h-1 mx-2 ${
+                          stepNumber < step ? "bg-navy" : "bg-gray-200"
+                        }`}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </DialogHeader>
         
-        <Form {...form}>
-          {step === 1 && (
-            <div className="space-y-6">
-              <BookingStepRoomDetails
-                form={form}
-                roomTitle={roomTitle}
-                roomPrice={roomPrice}
-              />
-              <div className="flex justify-end">
-                <Button onClick={handleNext} className="bg-gold hover:bg-gold/90">
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-          
-          {step === 2 && (
-            <div className="space-y-6">
-              <BookingStepGuest form={form} />
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={prevStep}>
-                  Back
-                </Button>
-                <Button 
-                  onClick={handleNext} 
-                  className="bg-gold hover:bg-gold/90"
-                  disabled={createBooking.isPending}
-                >
-                  {createBooking.isPending ? "Processing..." : "Confirm Booking"}
-                </Button>
-              </div>
-            </div>
-          )}
-          
-          {step === 3 && (
-            <BookingStepConfirmation
-              form={form}
-              calculateNights={calculateNights}
-              totalPrice={calculateTotalPrice()}
-              isSubmitting={createBooking.isPending}
-              submittedBooking={submittedBooking}
-            />
-          )}
-        </Form>
+        {step === 1 && (
+          <BookingStepPersonal
+            onNext={handlePersonalInfoNext}
+            initialData={personalInfo || undefined}
+          />
+        )}
+        
+        {step === 2 && (
+          <BookingStepRoomSelection
+            onNext={handleRoomSelectionNext}
+            onBack={() => setStep(1)}
+            initialData={roomSelection || undefined}
+            preSelectedRoom={roomTitle}
+          />
+        )}
+        
+        {step === 3 && personalInfo && roomSelection && (
+          <BookingStepPayment
+            personalInfo={personalInfo}
+            roomSelection={roomSelection}
+            onBack={() => setStep(2)}
+            onConfirm={handleConfirmBooking}
+            isLoading={createBooking.isPending}
+          />
+        )}
+        
+        {step === 4 && (
+          <BookingStepConfirmation
+            form={{
+              getValues: () => ({
+                ...personalInfo!,
+                ...roomSelection!,
+              }),
+            } as any}
+            calculateNights={calculateNights}
+            totalPrice={calculateTotalPrice()}
+            isSubmitting={false}
+            submittedBooking={submittedBooking}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
