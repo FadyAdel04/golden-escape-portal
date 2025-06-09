@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUpdateGalleryImage, useDeleteGalleryImage, type GalleryImage } from "@/hooks/useGalleryImages";
-import ImageUpload from "./ImageUpload";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface GalleryImageCardProps {
   image: GalleryImage;
@@ -25,9 +26,12 @@ const GalleryImageCard = ({ image }: GalleryImageCardProps) => {
   const [showPreview, setShowPreview] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   const updateImage = useUpdateGalleryImage();
   const deleteImage = useDeleteGalleryImage();
+  const { toast } = useToast();
 
   const handleUpdate = () => {
     updateImage.mutate({
@@ -37,12 +41,90 @@ const GalleryImageCard = ({ image }: GalleryImageCardProps) => {
     setShowEdit(false);
   };
 
-  const handleImageUpdate = (newImageUrl: string) => {
-    updateImage.mutate({
-      id: image.id,
-      image_url: newImageUrl
-    });
-    setShowImageUpload(false);
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Error",
+          description: "Please select a valid image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "File size must be less than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSelectedFile(file);
+    }
+  };
+
+  const handleImageUpdate = async () => {
+    if (!selectedFile) {
+      toast({
+        title: "Error",
+        description: "Please select a file to upload.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+    
+    try {
+      // Delete old image from storage if it exists
+      if (image.image_url) {
+        const oldFileName = image.image_url.split('/').pop();
+        if (oldFileName) {
+          await supabase.storage
+            .from('gallery-images')
+            .remove([oldFileName]);
+        }
+      }
+
+      const fileExt = selectedFile.name.split('.').pop()?.toLowerCase();
+      const fileName = `gallery_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('gallery-images')
+        .upload(fileName, selectedFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('gallery-images')
+        .getPublicUrl(fileName);
+
+      updateImage.mutate({
+        id: image.id,
+        image_url: urlData.publicUrl
+      });
+
+      setShowImageUpload(false);
+      setSelectedFile(null);
+
+    } catch (error) {
+      console.error('Upload process failed:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to upload image.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleDelete = () => {
@@ -68,7 +150,7 @@ const GalleryImageCard = ({ image }: GalleryImageCardProps) => {
         </div>
 
         {/* Scrollable Actions */}
-        <ScrollArea className="h-20 w-full mt-4">
+        <ScrollArea className="h-32 w-full mt-4">
           <div className="flex flex-col space-y-2">
             <Dialog open={showPreview} onOpenChange={setShowPreview}>
               <DialogTrigger asChild>
@@ -161,7 +243,39 @@ const GalleryImageCard = ({ image }: GalleryImageCardProps) => {
                 <DialogHeader>
                   <DialogTitle>Replace Image</DialogTitle>
                 </DialogHeader>
-                <ImageUpload onImageUpload={handleImageUpdate} />
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="image-upload">Select New Image</Label>
+                    <Input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      disabled={uploading}
+                    />
+                  </div>
+                  {selectedFile && (
+                    <p className="text-sm text-gray-600">
+                      Selected: {selectedFile.name}
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={handleImageUpdate} 
+                      disabled={uploading || !selectedFile}
+                      className="flex-1"
+                    >
+                      {uploading ? 'Uploading...' : 'Replace Image'}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowImageUpload(false)}
+                      disabled={uploading}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
               </DialogContent>
             </Dialog>
 

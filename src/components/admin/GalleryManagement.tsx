@@ -324,7 +324,6 @@ const GalleryManagement = () => {
           <GalleryImageCard 
             key={image.id} 
             image={image} 
-            onRefetch={refetch}
           />
         ))}
         
