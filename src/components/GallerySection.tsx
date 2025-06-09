@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useGalleryImages } from "@/hooks/useGalleryImages";
 import LightboxGallery from "./LightboxGallery";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 const GallerySection = () => {
   const { data: galleryImages, isLoading, error } = useGalleryImages();
@@ -22,6 +23,13 @@ const GallerySection = () => {
   const handlePrev = () => {
     setCurrentImageIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length);
   };
+
+  // Group images into pages of 6 (3 cols x 2 rows)
+  const imagesPerPage = 6;
+  const groupedImages = [];
+  for (let i = 0; i < displayImages.length; i += imagesPerPage) {
+    groupedImages.push(displayImages.slice(i, i + imagesPerPage));
+  }
 
   if (isLoading) {
     return (
@@ -63,33 +71,78 @@ const GallerySection = () => {
 
         {/* Gallery Grid */}
         {displayImages.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {displayImages.map((image, index) => (
-              <div
-                key={image.id}
-                className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer aspect-[4/3]"
-                onClick={() => openLightbox(index)}
-              >
-                <img
-                  src={image.image_url}
-                  alt={image.alt_text || `Gallery image ${index + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  onError={(e) => {
-                    console.error('Image failed to load:', image.image_url);
-                    // Fallback to a default image if the original fails to load
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
-                  }}
-                />
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <p className="text-sm font-medium capitalize">{image.category}</p>
-                  {image.alt_text && (
-                    <p className="text-xs text-white/80">{image.alt_text}</p>
-                  )}
+          displayImages.length <= imagesPerPage ? (
+            // Show static grid if 6 or fewer images
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {displayImages.map((image, index) => (
+                <div
+                  key={image.id}
+                  className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer aspect-[4/3]"
+                  onClick={() => openLightbox(index)}
+                >
+                  <img
+                    src={image.image_url}
+                    alt={image.alt_text || `Gallery image ${index + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    onError={(e) => {
+                      console.error('Image failed to load:', image.image_url);
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <p className="text-sm font-medium capitalize">{image.category}</p>
+                    {image.alt_text && (
+                      <p className="text-xs text-white/80">{image.alt_text}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            // Show carousel if more than 6 images
+            <div className="relative">
+              <Carousel className="w-full">
+                <CarouselContent className="-ml-4">
+                  {groupedImages.map((imageGroup, groupIndex) => (
+                    <CarouselItem key={groupIndex} className="pl-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {imageGroup.map((image, imageIndex) => {
+                          const globalIndex = groupIndex * imagesPerPage + imageIndex;
+                          return (
+                            <div
+                              key={image.id}
+                              className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer aspect-[4/3]"
+                              onClick={() => openLightbox(globalIndex)}
+                            >
+                              <img
+                                src={image.image_url}
+                                alt={image.alt_text || `Gallery image ${globalIndex + 1}`}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                onError={(e) => {
+                                  console.error('Image failed to load:', image.image_url);
+                                  e.currentTarget.src = 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
+                                }}
+                              />
+                              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                              <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <p className="text-sm font-medium capitalize">{image.category}</p>
+                                {image.alt_text && (
+                                  <p className="text-xs text-white/80">{image.alt_text}</p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="left-4" />
+                <CarouselNext className="right-4" />
+              </Carousel>
+            </div>
+          )
         ) : (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-4">
