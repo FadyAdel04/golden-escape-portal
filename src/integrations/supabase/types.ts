@@ -60,6 +60,78 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_info: {
+        Row: {
+          additional_info: string | null
+          content: string
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          section_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          additional_info?: string | null
+          content: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          section_type: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          additional_info?: string | null
+          content?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          section_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      facilities: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gallery_images: {
         Row: {
           alt_text: string | null
@@ -110,6 +182,48 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string
+          created_at: string
+          display_order: number | null
+          guest_image: string | null
+          guest_name: string
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          location: string | null
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          display_order?: number | null
+          guest_image?: string | null
+          guest_name: string
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          location?: string | null
+          rating: number
+          updated_at?: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          display_order?: number | null
+          guest_image?: string | null
+          guest_name?: string
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          location?: string | null
+          rating?: number
           updated_at?: string
         }
         Relationships: []

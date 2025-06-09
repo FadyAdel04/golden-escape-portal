@@ -1,42 +1,18 @@
 
-import { Bed, Waves, Utensils, Dumbbell, Wifi, ParkingMeter } from "lucide-react";
+import { useFacilities } from "@/hooks/useFacilities";
+import { icons } from "lucide-react";
 
 const FacilitiesSection = () => {
-  const facilities = [
-    {
-      icon: Waves,
-      title: "Swimming Pool",
-      description: "Relax and unwind in our infinity pool with panoramic views."
-    },
-    {
-      icon: Utensils,
-      title: "Fine Dining",
-      description: "Savor gourmet cuisine prepared by our Michelin-starred chef."
-    },
-    {
-      icon: Dumbbell,
-      title: "Fitness Center",
-      description: "Stay fit with state-of-the-art equipment and personal trainers."
-    },
-    {
-      icon: Bed,
-      title: "Luxury Spa",
-      description: "Indulge in rejuvenating treatments and massages in our spa."
-    },
-    {
-      icon: Wifi,
-      title: "Free Wi-Fi",
-      description: "Stay connected with high-speed internet throughout the property."
-    },
-    {
-      icon: ParkingMeter,
-      title: "Valet Parking",
-      description: "Enjoy convenient parking with our professional valet service."
-    }
-  ];
+  const { data: facilities, isLoading } = useFacilities();
+
+  if (isLoading) {
+    return <div>Loading facilities...</div>;
+  }
+
+  const activeFacilities = facilities?.filter(facility => facility.is_active) || [];
 
   return (
-    <section id="facilities" className="section-padding bg-white">
+    <section className="section-padding bg-white">
       <div className="container mx-auto px-4 md:px-6">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -44,24 +20,31 @@ const FacilitiesSection = () => {
             Facilities & Amenities
           </h2>
           <p className="text-gray-700 max-w-3xl mx-auto">
-            Discover our wide range of exceptional facilities designed to enhance your stay and provide an unforgettable experience.
+            Discover our world-class facilities and amenities designed to make your stay exceptional and memorable.
           </p>
         </div>
         
         {/* Facilities Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {facilities.map((facility, index) => (
-            <div 
-              key={index} 
-              className="bg-beige/30 rounded-lg p-8 flex flex-col items-center text-center hover:shadow-md transition-shadow"
-            >
-              <div className="bg-gold/10 p-4 rounded-full mb-6">
-                <facility.icon className="w-8 h-8 text-gold" />
+          {activeFacilities.map((facility) => {
+            const IconComponent = facility.icon ? icons[facility.icon as keyof typeof icons] : null;
+            
+            return (
+              <div key={facility.id} className="text-center p-6 bg-beige/30 rounded-lg hover:shadow-md transition-shadow">
+                <div className="mb-4 flex justify-center">
+                  {IconComponent ? (
+                    <IconComponent className="w-12 h-12 text-gold" />
+                  ) : (
+                    <div className="w-12 h-12 bg-gold rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold">{facility.name.charAt(0)}</span>
+                    </div>
+                  )}
+                </div>
+                <h3 className="text-xl font-bold text-navy mb-2">{facility.name}</h3>
+                <p className="text-gray-700">{facility.description}</p>
               </div>
-              <h3 className="text-xl font-bold text-navy mb-3">{facility.title}</h3>
-              <p className="text-gray-700">{facility.description}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

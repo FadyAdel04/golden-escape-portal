@@ -1,40 +1,23 @@
 
 import { useState, useEffect } from "react";
+import { useReviews } from "@/hooks/useReviews";
 
 const ReviewsSection = () => {
   const [activeIndex, setActiveIndex] = useState(0);
-  
-  const reviews = [
-    {
-      name: "John Smith",
-      rating: 5,
-      comment: "Absolutely phenomenal experience! The room was immaculate, the staff was incredibly attentive, and the amenities were top-notch. Can't wait to return for another luxurious stay.",
-      image: "https://randomuser.me/api/portraits/men/32.jpg",
-      location: "New York, USA"
-    },
-    {
-      name: "Sarah Johnson",
-      rating: 5,
-      comment: "Our stay at Luxury Haven exceeded all expectations. The attention to detail in both the room and service was impeccable. The spa treatments were particularly outstanding.",
-      image: "https://randomuser.me/api/portraits/women/44.jpg",
-      location: "London, UK"
-    },
-    {
-      name: "Michael Wong",
-      rating: 4,
-      comment: "Great experience overall. Beautiful property with excellent service. The only minor issue was that the restaurant was fully booked during our stay, but the concierge helped us find alternatives.",
-      image: "https://randomuser.me/api/portraits/men/22.jpg",
-      location: "Singapore"
-    }
-  ];
+  const { data: reviews, isLoading } = useReviews();
+
+  // Filter for active and featured reviews
+  const activeReviews = reviews?.filter(review => review.is_active && review.is_featured) || [];
 
   useEffect(() => {
+    if (activeReviews.length === 0) return;
+    
     const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev === reviews.length - 1 ? 0 : prev + 1));
+      setActiveIndex((prev) => (prev === activeReviews.length - 1 ? 0 : prev + 1));
     }, 6000);
     
     return () => clearInterval(interval);
-  }, [reviews.length]);
+  }, [activeReviews.length]);
 
   // Render stars based on rating
   const renderStars = (rating: number) => {
@@ -50,6 +33,14 @@ const ReviewsSection = () => {
       </svg>
     ));
   };
+
+  if (isLoading) {
+    return <div>Loading reviews...</div>;
+  }
+
+  if (activeReviews.length === 0) {
+    return null;
+  }
 
   return (
     <section className="section-padding bg-white">
@@ -72,14 +63,14 @@ const ReviewsSection = () => {
               className="flex transition-transform duration-700"
               style={{ transform: `translateX(-${activeIndex * 100}%)` }}
             >
-              {reviews.map((review, index) => (
-                <div key={index} className="min-w-full p-8 bg-beige/30 rounded-lg shadow-sm">
+              {activeReviews.map((review, index) => (
+                <div key={review.id} className="min-w-full p-8 bg-beige/30 rounded-lg shadow-sm">
                   <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                     {/* Guest Image */}
                     <div className="shrink-0">
                       <img 
-                        src={review.image} 
-                        alt={review.name} 
+                        src={review.guest_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(review.guest_name)}&background=d4a574&color=fff`}
+                        alt={review.guest_name} 
                         className="w-20 h-20 rounded-full object-cover border-2 border-gold"
                       />
                     </div>
@@ -91,8 +82,8 @@ const ReviewsSection = () => {
                       </div>
                       <p className="text-gray-700 italic mb-4">"{review.comment}"</p>
                       <div>
-                        <h4 className="font-bold text-navy">{review.name}</h4>
-                        <p className="text-sm text-gray-600">{review.location}</p>
+                        <h4 className="font-bold text-navy">{review.guest_name}</h4>
+                        {review.location && <p className="text-sm text-gray-600">{review.location}</p>}
                       </div>
                     </div>
                   </div>
@@ -103,7 +94,7 @@ const ReviewsSection = () => {
           
           {/* Carousel Indicators */}
           <div className="flex justify-center mt-8 space-x-2">
-            {reviews.map((_, index) => (
+            {activeReviews.map((_, index) => (
               <button
                 key={index}
                 className={`w-3 h-3 rounded-full transition-colors ${

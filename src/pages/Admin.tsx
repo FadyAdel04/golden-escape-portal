@@ -4,17 +4,20 @@ import RoomsList from "@/components/admin/RoomsList";
 import RoomForm from "@/components/admin/RoomForm";
 import BookingsManagement from "@/components/admin/BookingsManagement";
 import GalleryManagement from "@/components/admin/GalleryManagement";
+import FacilitiesManagement from "@/components/admin/FacilitiesManagement";
+import ReviewsManagement from "@/components/admin/ReviewsManagement";
+import ContactManagement from "@/components/admin/ContactManagement";
 import AdminLogin from "@/components/admin/AdminLogin";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCreateRoom, useUpdateRoom } from "@/hooks/useRooms";
 import { RoomWithImages } from "@/types/room";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, LogOut, Calendar, ImageIcon, Hotel } from "lucide-react";
+import { ArrowLeft, LogOut, Calendar, ImageIcon, Hotel, Settings, Users, MessageSquare } from "lucide-react";
 import { useAdmin } from "@/contexts/AdminContext";
 
 const Admin = () => {
-  const [currentView, setCurrentView] = useState<'dashboard' | 'rooms' | 'bookings' | 'gallery' | 'add' | 'edit'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'rooms' | 'bookings' | 'gallery' | 'facilities' | 'reviews' | 'contact' | 'add' | 'edit'>('dashboard');
   const [editingRoom, setEditingRoom] = useState<RoomWithImages | null>(null);
   const { isAdmin, logout } = useAdmin();
   
@@ -111,6 +114,45 @@ const Admin = () => {
                   </div>
                 </div>
               </div>
+              
+              <div 
+                className="bg-white p-6 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => setCurrentView('facilities')}
+              >
+                <div className="flex items-center gap-4">
+                  <Settings className="h-8 w-8 text-navy" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-navy">Facilities</h3>
+                    <p className="text-gray-600">Manage hotel facilities & amenities</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div 
+                className="bg-white p-6 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => setCurrentView('reviews')}
+              >
+                <div className="flex items-center gap-4">
+                  <MessageSquare className="h-8 w-8 text-navy" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-navy">Reviews</h3>
+                    <p className="text-gray-600">Manage guest reviews</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div 
+                className="bg-white p-6 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => setCurrentView('contact')}
+              >
+                <div className="flex items-center gap-4">
+                  <Users className="h-8 w-8 text-navy" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-navy">Contact Info</h3>
+                    <p className="text-gray-600">Manage contact information</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -120,6 +162,12 @@ const Admin = () => {
         return <BookingsManagement />;
       case 'gallery':
         return <GalleryManagement />;
+      case 'facilities':
+        return <FacilitiesManagement />;
+      case 'reviews':
+        return <ReviewsManagement />;
+      case 'contact':
+        return <ContactManagement />;
       case 'add':
       case 'edit':
         return (
@@ -149,7 +197,7 @@ const Admin = () => {
             <div className="mb-6 flex justify-between items-center">
               <div>
                 <h1 className="text-3xl font-bold text-navy mb-2">Admin Dashboard</h1>
-                <p className="text-gray-600">Manage your hotel rooms, bookings, and gallery</p>
+                <p className="text-gray-600">Manage your hotel operations</p>
               </div>
               <div className="flex items-center gap-2">
                 {currentView !== 'dashboard' && (

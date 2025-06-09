@@ -1,7 +1,29 @@
 
 import { Contact } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useContactInfo } from "@/hooks/useContactInfo";
 
 const LocationSection = () => {
+  const { data: contactInfo, isLoading } = useContactInfo();
+
+  if (isLoading) {
+    return <div>Loading contact information...</div>;
+  }
+
+  const activeContactInfo = contactInfo?.filter(info => info.is_active) || [];
+  
+  // Group contact info by section type
+  const groupedInfo = activeContactInfo.reduce((acc, info) => {
+    if (!acc[info.section_type]) {
+      acc[info.section_type] = [];
+    }
+    acc[info.section_type].push(info);
+    return acc;
+  }, {} as Record<string, typeof activeContactInfo>);
+
+  // Get map embed URL
+  const mapInfo = groupedInfo.location?.[0];
+
   return (
     <section id="contact" className="section-padding bg-beige/30">
       <div className="container mx-auto px-4 md:px-6">
@@ -21,39 +43,61 @@ const LocationSection = () => {
             <h3 className="text-2xl font-bold text-navy mb-6">Get in Touch</h3>
             
             <div className="space-y-6">
-              <div>
-                <h4 className="font-bold text-navy mb-2">Address</h4>
-                <p className="text-gray-700">
-                  123 Luxury Avenue<br />
-                  Beachfront District<br />
-                  Paradise City, 10001
-                </p>
-              </div>
+              {/* Address */}
+              {groupedInfo.address && (
+                <div>
+                  <h4 className="font-bold text-navy mb-2">Address</h4>
+                  {groupedInfo.address.map((info) => (
+                    <div key={info.id}>
+                      <p className="text-gray-700">
+                        {info.content}
+                        {info.additional_info && (
+                          <>
+                            <br />
+                            {info.additional_info}
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
               
-              <div>
-                <h4 className="font-bold text-navy mb-2">Phone</h4>
-                <p className="text-gray-700">
-                  Reservations: +1 (800) 123-4567<br />
-                  Front Desk: +1 (800) 123-4568
-                </p>
-              </div>
+              {/* Phone */}
+              {groupedInfo.phone && (
+                <div>
+                  <h4 className="font-bold text-navy mb-2">Phone</h4>
+                  {groupedInfo.phone.map((info) => (
+                    <p key={info.id} className="text-gray-700">
+                      {info.title}: {info.content}
+                    </p>
+                  ))}
+                </div>
+              )}
               
-              <div>
-                <h4 className="font-bold text-navy mb-2">Email</h4>
-                <p className="text-gray-700">
-                  reservations@luxuryhaven.com<br />
-                  info@luxuryhaven.com
-                </p>
-              </div>
+              {/* Email */}
+              {groupedInfo.email && (
+                <div>
+                  <h4 className="font-bold text-navy mb-2">Email</h4>
+                  {groupedInfo.email.map((info) => (
+                    <p key={info.id} className="text-gray-700">
+                      {info.content}
+                    </p>
+                  ))}
+                </div>
+              )}
               
-              <div>
-                <h4 className="font-bold text-navy mb-2">Hours</h4>
-                <p className="text-gray-700">
-                  Check-in: 3:00 PM<br />
-                  Check-out: 12:00 PM<br />
-                  Front Desk: Open 24/7
-                </p>
-              </div>
+              {/* Hours */}
+              {groupedInfo.hours && (
+                <div>
+                  <h4 className="font-bold text-navy mb-2">Hours</h4>
+                  {groupedInfo.hours.map((info) => (
+                    <p key={info.id} className="text-gray-700">
+                      {info.title}: {info.content}
+                    </p>
+                  ))}
+                </div>
+              )}
               
               <div>
                 <Button className="bg-gold hover:bg-gold/90 text-white">
@@ -67,13 +111,19 @@ const LocationSection = () => {
           {/* Map */}
           <div className="md:col-span-3">
             <div className="aspect-[16/10] rounded-lg overflow-hidden shadow-sm">
-              <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d387193.3059353029!2d-74.25986548248684!3d40.697149419326095!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2suk!4v1617786771224!5m2!1sen!2suk" 
-                className="w-full h-full border-0"
-                allowFullScreen 
-                loading="lazy"
-                title="Hotel Location Map"
-              ></iframe>
+              {mapInfo ? (
+                <iframe 
+                  src={mapInfo.content}
+                  className="w-full h-full border-0"
+                  allowFullScreen 
+                  loading="lazy"
+                  title={mapInfo.additional_info || "Hotel Location Map"}
+                ></iframe>
+              ) : (
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <p className="text-gray-500">Map not available</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -81,7 +131,5 @@ const LocationSection = () => {
     </section>
   );
 };
-
-import { Button } from "@/components/ui/button";
 
 export default LocationSection;
