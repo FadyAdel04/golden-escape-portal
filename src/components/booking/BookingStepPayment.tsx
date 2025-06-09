@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { CreditCard, Lock } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { CreditCard, Lock, Banknote } from "lucide-react";
 import { PersonalInfoData } from "./BookingStepPersonal";
 import { RoomSelectionData } from "./BookingStepRoomSelection";
 
@@ -17,6 +18,7 @@ export interface BookingStepPaymentProps {
 }
 
 const BookingStepPayment = ({ personalInfo, roomSelection, onBack, onConfirm, isLoading }: BookingStepPaymentProps) => {
+  const [paymentMethod, setPaymentMethod] = useState("online");
   const [paymentData, setPaymentData] = useState({
     cardNumber: "",
     expiryDate: "",
@@ -47,6 +49,19 @@ const BookingStepPayment = ({ personalInfo, roomSelection, onBack, onConfirm, is
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // For cash payment, we don't need to validate card details
+    if (paymentMethod === "cash") {
+      onConfirm();
+      return;
+    }
+    
+    // For online payment, validate card details
+    if (!paymentData.nameOnCard || !paymentData.cardNumber || !paymentData.expiryDate || !paymentData.cvv) {
+      alert("Please fill in all payment details");
+      return;
+    }
+    
     onConfirm();
   };
 
@@ -54,7 +69,7 @@ const BookingStepPayment = ({ personalInfo, roomSelection, onBack, onConfirm, is
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-navy mb-2">Payment & Confirmation</h3>
-        <p className="text-gray-600">Review your booking details and complete your payment.</p>
+        <p className="text-gray-600">Choose your payment method and complete your booking.</p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8">
@@ -111,64 +126,107 @@ const BookingStepPayment = ({ personalInfo, roomSelection, onBack, onConfirm, is
           </div>
         </div>
 
-        {/* Payment Form */}
+        {/* Payment Method Selection */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5 text-navy" />
-            <h4 className="font-semibold text-navy">Payment Information</h4>
-            <Lock className="h-4 w-4 text-gray-500" />
-          </div>
-
+          <h4 className="font-semibold text-navy">Payment Method</h4>
+          
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="nameOnCard">Name on Card</Label>
-              <Input
-                id="nameOnCard"
-                value={paymentData.nameOnCard}
-                onChange={(e) => setPaymentData(prev => ({ ...prev, nameOnCard: e.target.value }))}
-                placeholder="Enter cardholder name"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="cardNumber">Card Number</Label>
-              <Input
-                id="cardNumber"
-                value={paymentData.cardNumber}
-                onChange={(e) => setPaymentData(prev => ({ ...prev, cardNumber: e.target.value }))}
-                placeholder="1234 5678 9012 3456"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="expiryDate">Expiry Date</Label>
-                <Input
-                  id="expiryDate"
-                  value={paymentData.expiryDate}
-                  onChange={(e) => setPaymentData(prev => ({ ...prev, expiryDate: e.target.value }))}
-                  placeholder="MM/YY"
-                  required
-                />
+            <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-3">
+              <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                <RadioGroupItem value="online" id="online" />
+                <div className="flex items-center gap-2 flex-1">
+                  <CreditCard className="h-5 w-5 text-navy" />
+                  <Label htmlFor="online" className="font-medium">Pay Online (Credit/Debit Card)</Label>
+                  <Lock className="h-4 w-4 text-gray-500" />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="cvv">CVV</Label>
-                <Input
-                  id="cvv"
-                  value={paymentData.cvv}
-                  onChange={(e) => setPaymentData(prev => ({ ...prev, cvv: e.target.value }))}
-                  placeholder="123"
-                  required
-                />
+              
+              <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                <RadioGroupItem value="cash" id="cash" />
+                <div className="flex items-center gap-2 flex-1">
+                  <Banknote className="h-5 w-5 text-navy" />
+                  <Label htmlFor="cash" className="font-medium">Pay on Arrival (Cash)</Label>
+                </div>
               </div>
-            </div>
+            </RadioGroup>
 
-            <div className="text-xs text-gray-500 flex items-center gap-1">
-              <Lock className="h-3 w-3" />
-              Your payment information is secure and encrypted
-            </div>
+            {/* Card Details (only show for online payment) */}
+            {paymentMethod === "online" && (
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 mb-4">
+                  <CreditCard className="h-5 w-5 text-navy" />
+                  <h5 className="font-medium text-navy">Card Information</h5>
+                  <Lock className="h-4 w-4 text-gray-500" />
+                </div>
+
+                <div>
+                  <Label htmlFor="nameOnCard">Name on Card</Label>
+                  <Input
+                    id="nameOnCard"
+                    value={paymentData.nameOnCard}
+                    onChange={(e) => setPaymentData(prev => ({ ...prev, nameOnCard: e.target.value }))}
+                    placeholder="Enter cardholder name"
+                    required={paymentMethod === "online"}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="cardNumber">Card Number</Label>
+                  <Input
+                    id="cardNumber"
+                    value={paymentData.cardNumber}
+                    onChange={(e) => setPaymentData(prev => ({ ...prev, cardNumber: e.target.value }))}
+                    placeholder="1234 5678 9012 3456"
+                    required={paymentMethod === "online"}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="expiryDate">Expiry Date</Label>
+                    <Input
+                      id="expiryDate"
+                      value={paymentData.expiryDate}
+                      onChange={(e) => setPaymentData(prev => ({ ...prev, expiryDate: e.target.value }))}
+                      placeholder="MM/YY"
+                      required={paymentMethod === "online"}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cvv">CVV</Label>
+                    <Input
+                      id="cvv"
+                      value={paymentData.cvv}
+                      onChange={(e) => setPaymentData(prev => ({ ...prev, cvv: e.target.value }))}
+                      placeholder="123"
+                      required={paymentMethod === "online"}
+                    />
+                  </div>
+                </div>
+
+                <div className="text-xs text-gray-500 flex items-center gap-1">
+                  <Lock className="h-3 w-3" />
+                  Your payment information is secure and encrypted
+                </div>
+              </div>
+            )}
+
+            {/* Cash Payment Info */}
+            {paymentMethod === "cash" && (
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Banknote className="h-5 w-5 text-amber-600" />
+                  <h5 className="font-medium text-amber-800">Pay on Arrival</h5>
+                </div>
+                <p className="text-sm text-amber-700">
+                  You can pay the full amount of ${calculateTotal()} when you arrive at the hotel. 
+                  Please bring cash or a valid credit/debit card for payment at check-in.
+                </p>
+                <p className="text-xs text-amber-600 mt-2">
+                  Note: Your reservation will be confirmed, but payment will be processed upon arrival.
+                </p>
+              </div>
+            )}
 
             <div className="flex justify-between pt-4">
               <Button type="button" variant="outline" onClick={onBack} disabled={isLoading}>
@@ -179,7 +237,10 @@ const BookingStepPayment = ({ personalInfo, roomSelection, onBack, onConfirm, is
                 className="bg-gold hover:bg-gold/90" 
                 disabled={isLoading}
               >
-                {isLoading ? "Processing..." : `Confirm & Pay $${calculateTotal()}`}
+                {isLoading ? "Processing..." : 
+                  paymentMethod === "online" ? `Pay Now $${calculateTotal()}` : 
+                  `Confirm Booking - Pay on Arrival`
+                }
               </Button>
             </div>
           </form>

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useGalleryImages, useCreateGalleryImage, useDeleteGalleryImage } from '@/hooks/useGalleryImages';
+import { useGalleryImages, useCreateGalleryImage } from '@/hooks/useGalleryImages';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,12 +20,12 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2, Upload, X, Eye, Image as ImageIcon } from 'lucide-react';
+import { Plus, Upload, X, Image as ImageIcon } from 'lucide-react';
+import GalleryImageCard from './GalleryImageCard';
 
 const GalleryManagement = () => {
   const { data: images, isLoading, refetch } = useGalleryImages();
   const createImage = useCreateGalleryImage();
-  const deleteImage = useDeleteGalleryImage();
   const { toast } = useToast();
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -150,46 +150,6 @@ const GalleryManagement = () => {
       });
     } finally {
       setUploading(false);
-    }
-  };
-
-  const handleDeleteImage = async (id: string, imageUrl: string) => {
-    if (!confirm('Are you sure you want to delete this image? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      // Extract filename from URL to delete from storage
-      const urlParts = imageUrl.split('/');
-      const fileName = urlParts[urlParts.length - 1];
-      
-      console.log('Deleting file from storage:', fileName);
-      
-      // Delete from storage first
-      const { error: storageError } = await supabase.storage
-        .from('gallery-images')
-        .remove([fileName]);
-        
-      if (storageError) {
-        console.error('Error deleting image from storage:', storageError);
-      }
-
-      // Delete from database
-      await deleteImage.mutateAsync(id);
-      
-      toast({
-        title: "Success",
-        description: "Image deleted successfully!",
-      });
-      
-      refetch();
-    } catch (error) {
-      console.error('Delete error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete image. Please try again.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -361,56 +321,11 @@ const GalleryManagement = () => {
       {/* Gallery Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {images?.map((image) => (
-          <div key={image.id} className="bg-white rounded-lg shadow-md overflow-hidden group hover:shadow-lg transition-shadow">
-            <div className="aspect-[4/3] overflow-hidden relative">
-              <img
-                src={image.image_url}
-                alt={image.alt_text || 'Gallery image'}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                onError={(e) => {
-                  console.error('Image failed to load:', image.image_url);
-                  e.currentTarget.src = 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
-                }}
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => window.open(image.image_url, '_blank')}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDeleteImage(image.id, image.image_url)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-4">
-              <div className="flex justify-between items-start mb-2">
-                <span className="text-sm font-medium text-navy capitalize bg-gray-100 px-2 py-1 rounded">
-                  {image.category}
-                </span>
-                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                  #{image.display_order}
-                </span>
-              </div>
-              
-              {image.alt_text && (
-                <p className="text-sm text-gray-600 line-clamp-2">{image.alt_text}</p>
-              )}
-              
-              <div className="text-xs text-gray-400 mt-2">
-                ID: {image.id.slice(0, 8)}...
-              </div>
-            </div>
-          </div>
+          <GalleryImageCard 
+            key={image.id} 
+            image={image} 
+            onRefetch={refetch}
+          />
         ))}
         
         {(!images || images.length === 0) && (

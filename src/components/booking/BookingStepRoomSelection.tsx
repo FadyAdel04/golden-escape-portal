@@ -29,10 +29,23 @@ interface BookingStepRoomSelectionProps {
 }
 
 const BookingStepRoomSelection = ({ onNext, onBack, initialData, preSelectedRoom }: BookingStepRoomSelectionProps) => {
+  // Set default room type based on preSelectedRoom or initialData
+  const getDefaultRoomType = () => {
+    if (initialData?.room_type) return initialData.room_type;
+    if (preSelectedRoom) {
+      // Convert room title to the format used in the select options
+      if (preSelectedRoom.toLowerCase().includes('standard')) return "Standard Room";
+      if (preSelectedRoom.toLowerCase().includes('deluxe')) return "Deluxe Room";
+      if (preSelectedRoom.toLowerCase().includes('executive') || preSelectedRoom.toLowerCase().includes('suite')) return "Executive Suite";
+      return preSelectedRoom; // Use as-is if it matches exactly
+    }
+    return "";
+  };
+
   const form = useForm<RoomSelectionData>({
     resolver: zodResolver(roomSelectionSchema),
     defaultValues: {
-      room_type: initialData?.room_type || preSelectedRoom || "",
+      room_type: getDefaultRoomType(),
       check_in_date: initialData?.check_in_date || "",
       check_out_date: initialData?.check_out_date || "",
       number_of_guests: initialData?.number_of_guests || 1,
@@ -77,6 +90,9 @@ const BookingStepRoomSelection = ({ onNext, onBack, initialData, preSelectedRoom
       <div>
         <h3 className="text-lg font-semibold text-navy mb-2">Room & Booking Details</h3>
         <p className="text-gray-600">Select your room type and dates for your stay.</p>
+        {preSelectedRoom && (
+          <p className="text-sm text-gold mt-1">✓ Pre-selected: {preSelectedRoom} (you can change this if needed)</p>
+        )}
       </div>
 
       <Form {...form}>
@@ -87,7 +103,7 @@ const BookingStepRoomSelection = ({ onNext, onBack, initialData, preSelectedRoom
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Room Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a room type" />

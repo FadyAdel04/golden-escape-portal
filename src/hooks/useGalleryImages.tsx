@@ -64,6 +64,40 @@ export const useCreateGalleryImage = () => {
   });
 };
 
+export const useUpdateGalleryImage = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (imageData: {
+      id: string;
+      alt_text?: string;
+      category?: string;
+      display_order?: number;
+    }) => {
+      console.log('Updating gallery image:', imageData);
+      const { id, ...updateData } = imageData;
+      
+      const { data, error } = await supabase
+        .from('gallery_images')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating gallery image:', error);
+        throw error;
+      }
+
+      console.log('Updated gallery image:', data);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gallery-images'] });
+    },
+  });
+};
+
 export const useDeleteGalleryImage = () => {
   const queryClient = useQueryClient();
   
@@ -71,33 +105,6 @@ export const useDeleteGalleryImage = () => {
     mutationFn: async (id: string) => {
       console.log('Deleting gallery image:', id);
       
-      // First get the image to delete the file from storage
-      const { data: imageData, error: fetchError } = await supabase
-        .from('gallery_images')
-        .select('image_url')
-        .eq('id', id)
-        .single();
-
-      if (fetchError) {
-        console.error('Error fetching image for deletion:', fetchError);
-        throw fetchError;
-      }
-
-      // Extract filename from URL to delete from storage
-      if (imageData?.image_url) {
-        const urlParts = imageData.image_url.split('/');
-        const fileName = urlParts[urlParts.length - 1];
-        
-        const { error: storageError } = await supabase.storage
-          .from('gallery-images')
-          .remove([fileName]);
-          
-        if (storageError) {
-          console.error('Error deleting image from storage:', storageError);
-        }
-      }
-
-      // Delete from database
       const { error } = await supabase
         .from('gallery_images')
         .delete()
