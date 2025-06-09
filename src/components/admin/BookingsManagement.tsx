@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useBookings, useUpdateBooking, type Booking } from '@/hooks/useBookings';
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Calendar, User, Phone, Mail, Clock, Bell } from 'lucide-react';
+import { Calendar, User, Phone, Mail, Clock, Bell, CreditCard, Banknote } from 'lucide-react';
 import { format } from 'date-fns';
 
 const BookingsManagement = () => {
@@ -45,6 +44,21 @@ const BookingsManagement = () => {
       case 'rejected': return 'bg-red-500';
       default: return 'bg-gray-500';
     }
+  };
+
+  const getPaymentMethodIcon = (method: string | undefined) => {
+    if (method === 'online') {
+      return <CreditCard className="h-4 w-4 text-blue-600" />;
+    } else if (method === 'cash') {
+      return <Banknote className="h-4 w-4 text-green-600" />;
+    }
+    return <span className="text-gray-400">-</span>;
+  };
+
+  const getPaymentMethodText = (method: string | undefined) => {
+    if (method === 'online') return 'Online';
+    if (method === 'cash') return 'On Arrival';
+    return 'Not specified';
   };
 
   const handleUpdateBooking = () => {
@@ -131,6 +145,7 @@ const BookingsManagement = () => {
               <TableHead>Dates</TableHead>
               <TableHead>Room Type</TableHead>
               <TableHead>Guests</TableHead>
+              <TableHead>Payment</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
               <TableHead>Actions</TableHead>
@@ -183,6 +198,14 @@ const BookingsManagement = () => {
                     <div className="flex items-center gap-1">
                       <User className="h-4 w-4 text-gray-500" />
                       {booking.number_of_guests}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {getPaymentMethodIcon(booking.payment_method)}
+                      <span className="text-sm">
+                        {getPaymentMethodText(booking.payment_method)}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell>

@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -14,6 +13,7 @@ export type Booking = {
   number_of_guests: number;
   room_type: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'rejected';
+  payment_method?: 'online' | 'cash';
   admin_notes?: string;
   total_nights: number;
   user_id?: string;
@@ -29,6 +29,7 @@ export type BookingFormData = {
   check_out_date: string;
   number_of_guests: number;
   room_type: string;
+  payment_method?: 'online' | 'cash';
 };
 
 export const useBookings = () => {

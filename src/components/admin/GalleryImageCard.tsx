@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +19,7 @@ import {
 import { useUpdateGalleryImage, useDeleteGalleryImage } from '@/hooks/useGalleryImages';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Eye, Edit, Trash2, Save, X } from 'lucide-react';
+import { Eye, Edit, Trash2, Save, X, Upload } from 'lucide-react';
 import { GalleryImage } from '@/hooks/useGalleryImages';
 
 interface GalleryImageCardProps {
@@ -31,6 +30,8 @@ interface GalleryImageCardProps {
 const GalleryImageCard = ({ image, onRefetch }: GalleryImageCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [editData, setEditData] = useState({
     alt_text: image.alt_text || '',
     category: image.category,
@@ -41,10 +42,74 @@ const GalleryImageCard = ({ image, onRefetch }: GalleryImageCardProps) => {
   const deleteImage = useDeleteGalleryImage();
   const { toast } = useToast();
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Error",
+          description: "Please select a valid image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "File size must be less than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSelectedFile(file);
+    }
+  };
+
   const handleSaveEdit = async () => {
     try {
+      setUploading(true);
+      let newImageUrl = image.image_url;
+
+      // If a new file is selected, upload it
+      if (selectedFile) {
+        // Delete old image from storage
+        const urlParts = image.image_url.split('/');
+        const oldFileName = urlParts[urlParts.length - 1];
+        
+        const { error: deleteError } = await supabase.storage
+          .from('gallery-images')
+          .remove([oldFileName]);
+          
+        if (deleteError) {
+          console.error('Error deleting old image:', deleteError);
+        }
+
+        // Upload new image
+        const fileExt = selectedFile.name.split('.').pop()?.toLowerCase();
+        const fileName = `gallery_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('gallery-images')
+          .upload(fileName, selectedFile);
+
+        if (uploadError) {
+          throw new Error(`Upload failed: ${uploadError.message}`);
+        }
+
+        // Get new public URL
+        const { data: urlData } = supabase.storage
+          .from('gallery-images')
+          .getPublicUrl(fileName);
+
+        newImageUrl = urlData.publicUrl;
+      }
+
+      // Update image data
       await updateImage.mutateAsync({
         id: image.id,
+        image_url: newImageUrl,
         ...editData,
       });
       
@@ -54,6 +119,7 @@ const GalleryImageCard = ({ image, onRefetch }: GalleryImageCardProps) => {
       });
       
       setIsEditing(false);
+      setSelectedFile(null);
       onRefetch();
     } catch (error) {
       console.error('Update error:', error);
@@ -62,6 +128,8 @@ const GalleryImageCard = ({ image, onRefetch }: GalleryImageCardProps) => {
         description: "Failed to update image. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -215,6 +283,23 @@ const GalleryImageCard = ({ image, onRefetch }: GalleryImageCardProps) => {
             </div>
             
             <div>
+              <Label htmlFor="edit-image-upload">Replace Image (Optional)</Label>
+              <Input
+                id="edit-image-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                disabled={uploading}
+                className="cursor-pointer"
+              />
+              {selectedFile && (
+                <p className="text-xs text-green-600 mt-1">
+                  New file selected: {selectedFile.name}
+                </p>
+              )}
+            </div>
+            
+            <div>
               <Label htmlFor="edit-alt-text">Image Description</Label>
               <Input
                 id="edit-alt-text"
@@ -260,13 +345,13 @@ const GalleryImageCard = ({ image, onRefetch }: GalleryImageCardProps) => {
             <div className="flex gap-2 pt-4">
               <Button 
                 onClick={handleSaveEdit} 
-                disabled={updateImage.isPending}
+                disabled={uploading}
                 className="flex-1 bg-navy hover:bg-navy/90"
               >
-                {updateImage.isPending ? (
+                {uploading ? (
                   <>
-                    <Save className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
+                    <Upload className="h-4 w-4 mr-2 animate-spin" />
+                    Updating...
                   </>
                 ) : (
                   <>
@@ -278,8 +363,11 @@ const GalleryImageCard = ({ image, onRefetch }: GalleryImageCardProps) => {
               
               <Button 
                 variant="outline" 
-                onClick={() => setIsEditing(false)}
-                disabled={updateImage.isPending}
+                onClick={() => {
+                  setIsEditing(false);
+                  setSelectedFile(null);
+                }}
+                disabled={uploading}
               >
                 <X className="h-4 w-4 mr-2" />
                 Cancel

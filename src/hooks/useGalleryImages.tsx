@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -70,6 +69,7 @@ export const useUpdateGalleryImage = () => {
   return useMutation({
     mutationFn: async (imageData: {
       id: string;
+      image_url?: string;
       alt_text?: string;
       category?: string;
       display_order?: number;
